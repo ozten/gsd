@@ -1,3 +1,24 @@
 #logo {
   font-size: 150%;
 }
+nav { 
+  float: left;
+}
+nav ul li {
+  border: solid 1px #000;
+  width: 300px;
+  margin: 10px;
+  padding: 5px;
+  line-height: 1.5;
+}
+
+#display {
+  border: solid 1px #000;
+  width: 300px;
+  margin: 10px 10px 10px 350px;
+  padding: 5px;
+  line-height: 1.5;
+}
+#display textarea {
+  width: 98%;
+}

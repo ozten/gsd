@@ -2,7 +2,10 @@
 
 $(document).ready(function(){
     var dbName = "IdeaCatcherDBv13";
+    var dbDescription = "All your ideas are belong to us.";
     var objectStoreName = "ideas";
+
+    var currentMeme = null;
 
     var handleError = function(event) {
         // Do something with request.errorCode!
@@ -10,7 +13,7 @@ $(document).ready(function(){
         console.info("ERROR: #", event.target.errorCode);
     };
     var setupDb = function (event) {
-        var req = window.indexedDB.open(dbName, "All your ideas are belong to us."),
+        var req = window.indexedDB.open(dbName, dbDescription),
             migrations = [
                 0, 
                 function (req) {
@@ -72,6 +75,55 @@ $(document).ready(function(){
             };
         }
     }; //end function writeData 
+    var updateMeme = function (id, meme) {
+        var openReq = window.indexedDB.open(dbName, dbDescription);
+        openReq.onerror = handleError;
+        openReq.onsuccess = function (event) {
+            var db = openReq.result;
+            var transaction = db.transaction([objectStoreName], IDBTransaction.READ_WRITE);
+            var addReq;
+            transaction.onerror = handleError;
+            // Do something when all the data is added to the database.
+            transaction.oncomplete = function(event) {
+                console.info("Update ", id, " complete");
+            };
+
+            var objectStore = transaction.objectStore(objectStoreName);
+            for (var i in firstIdeas) {
+                addReq = objectStore.put(meme);
+                addReq.onsuccess = function(event) {
+                    // event.target.result == firstIdeas[i].ssn
+                    console.info("success ", event.target.result);
+                };
+            }
+        };
+    }; //end updateMeme
+
+    /**
+     * loadFn is a function that takes to parameters key and value. It 
+     * returns a boolean - true to continue reading from the DB.
+     * finFn is called when no more data is available.
+     */
+    var getAllMemes = function (loadFn, finFn) {
+        var openReq = window.indexedDB.open(dbName, dbDescription);
+        openReq.onerror = handleError;
+        openReq.onsuccess = function (event) {
+            console.info(event.target.result);
+            var db = event.target.result;
+            var trans = db.transaction([objectStoreName]);
+            var objectStore = trans.objectStore(objectStoreName);
+            objectStore.openCursor().onsuccess = function (cursorEvent) {
+                var cursor = cursorEvent.target.result;
+                if (cursor) {
+                    if (loadFn(cursor.key, cursor.value)) {
+                        cursor.continue();
+                    }
+                } else {
+                    finFn();
+                }
+            };
+        };
+    }
 
     $('nav ul li').text('Ok');
 
@@ -99,9 +151,8 @@ $(document).ready(function(){
     if (window.indexedDB) {
         setupDb();
 
-
         setTimeout(function () {
-            window.readOpenRequest = window.indexedDB.open(dbName, "All your ideas are belong to us.");
+            window.readOpenRequest = window.indexedDB.open(dbName, dbDescription);
             window.readOpenRequest.onerror = handleError;
         
     var getAllData = function (db) {
@@ -140,6 +191,49 @@ $(document).ready(function(){
                window.readOpenRequest.onsuccess = handleDbOpen;
             }, 3000);//end setTimeout
     } // if window.indexedDB
+    var timeoutId = null;
+    var saveCurrent = function () {
+        if (timeoutId != null) {
+            clearTimeout(timeoutId);
+        }
+        timeoutId = setTimeout(function () {
+                currentMeme.content = $('#display textarea').val();
+                currentMeme.title = currentMeme.content.split('\n')[0];
+                $('nav ul li.current').text(currentMeme.title);
+                timeoutId = null;
+                updateMeme(currentMeme['id'], currentMeme);
+            }, 300);
+    }
+    var initUI = function () {
+        $('#display textarea').bind('change, keyup', function (event) {
+            console.info("Make that change");
+            saveCurrent();
+        });
+    };
+    setTimeout(function () {    
+            $('nav ul li').remove();
+            initUI();
+            getAllMemes(
+                function (key, value) {
+                    var s = "";
+                    for (var e in value) {
+                        s += e + " " + value[e] + " ";
+                    }
+                    $('nav ul').append("<li id='" + key + "'>" + value.title + "</li>");
+                    if ($('#display').hasClass('loading')) {
+                        var d = $('#display');
+                        d.removeClass('loading');
+                        $('span', d).hide();
+                        $('textarea').val(value.content);
+                        $('nav ul li:last-child').addClass('current');
+                        currentMeme = value;
+                    }
+                }, 
+                function () {
+                    console.info("Done");
+                }); 
+        }, 100);
+    
 });//end document ready
 
             /* 

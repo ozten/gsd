@@ -10,11 +10,13 @@
 </head>
 <body>
   <header><div id="logo">Idea Catcher</div>
+    <input id="q" type="search" />
+    <button id="new_meme">New</button>
   </header>
 
   <div id="main">
     <nav><ul><li>Loading Ideas</ul></nav>
-    <div id="display">Choose an Idea...</div>
+    <div id="display" class="loading"><span>Loading...</span><textarea></textarea></div>
   </div>
   <footer></footer>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.js"></script>
