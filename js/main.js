@@ -18,23 +18,18 @@ $(document).ready(function(){
                 0, 
                 function (req) {
                     /* A fn that make a onsuccess handler, which captures the db from the request */
-                    console.info("Manufacturing fn which closes over ", req);
                     return function(event) {
                         var trans = req.result;
-                        console.info("Creating object store", objectStoreName, "having opened", dbName, " db=", trans.db);
                         var db = trans.db;
                         objectStore = db.createObjectStore(objectStoreName, {keyPath: 'id', autoIncrement: true}, false);
                         objectStore.createIndex("title", "id", { unique: false });
-                        console.info("Finished Creating object store");
                         migrate(event);//bootstrap next iteration
                     }
                 },
                 function (req) {
-                    console.info("Manufacturing 2nd fn which closes over ", req);
                     return function (event) {
                         var trans = req.result;
                         var db = trans.db;
-                        console.info("writing data to db=", db);
                         writeData(db);
                     }
                 },
@@ -43,7 +38,6 @@ $(document).ready(function(){
                 // .source IDBFactory, .result IDBDatabase, req.LOADING, req.DONE, req.readyState
                 dbVersion = parseInt(req.result.version);
                 dbVersion = isNaN(dbVersion) ? 0 : dbVersion;
-                console.info("DB Version is ", dbVersion, " we know about ", migrations.length - 1 );
                 if ((dbVersion + 1) < migrations.length) {
                     setVerReq = req.result.setVersion(dbVersion + 1);
                     req.result.onerror = handleError;
@@ -75,6 +69,33 @@ $(document).ready(function(){
             };
         }
     }; //end function writeData 
+    var createMeme = function () {
+        var meme = {title: '', content: ''}
+        var openReq = window.indexedDB.open(dbName, dbDescription);
+        openReq.onerror = handleError;
+        openReq.onsuccess = function (event) {
+            var db = openReq.result;
+            var transaction = db.transaction([objectStoreName], IDBTransaction.READ_WRITE);
+            var addReq;
+            transaction.onerror = handleError;
+            // Do something when all the data is added to the database.
+            transaction.oncomplete = function(event) {
+                console.info("create meme complete");
+            };
+
+            var objectStore = transaction.objectStore(objectStoreName);
+            for (var i in firstIdeas) {
+                addReq = objectStore.add(meme);
+                addReq.onsuccess = function(event) {
+                    // event.target.result == firstIdeas[i].ssn
+                    meme.id = event.target.result;
+                    console.info("Update successeded ", event.target.result);
+                    console.info("Meme now looks like", meme);
+                };
+            }
+        };
+        return meme;
+    } // end createMeme
     var updateMeme = function (id, meme) {
         var openReq = window.indexedDB.open(dbName, dbDescription);
         openReq.onerror = handleError;
@@ -93,12 +114,26 @@ $(document).ready(function(){
                 addReq = objectStore.put(meme);
                 addReq.onsuccess = function(event) {
                     // event.target.result == firstIdeas[i].ssn
-                    console.info("success ", event.target.result);
+                    console.info("Update successeded ", event.target.result);
                 };
             }
         };
     }; //end updateMeme
-
+    var getMeme = function (id, fn) {
+        var openReq = window.indexedDB.open(dbName, dbDescription);
+        openReq.onerror = handleError;
+        openReq.onsuccess = function (event) {
+            var db = openReq.result;
+            var transaction = db.transaction([objectStoreName]);
+            var objectStore = transaction.objectStore(objectStoreName);
+            var getReq = objectStore.get(id);
+            getReq.onerror = handleError;
+            getReq.onsuccess = function(event) {
+                // Do something with the request.result!
+                fn(getReq.result);
+            };
+        };
+    }; //end function getMeme
     /**
      * loadFn is a function that takes to parameters key and value. It 
      * returns a boolean - true to continue reading from the DB.
@@ -108,7 +143,6 @@ $(document).ready(function(){
         var openReq = window.indexedDB.open(dbName, dbDescription);
         openReq.onerror = handleError;
         openReq.onsuccess = function (event) {
-            console.info(event.target.result);
             var db = event.target.result;
             var trans = db.transaction([objectStoreName]);
             var objectStore = trans.objectStore(objectStoreName);
@@ -139,7 +173,6 @@ $(document).ready(function(){
 
     var firstIdeas = [
     { 
-        /*id: 10,  */
       title: 'Welcome to Idea Catcher',
       content: 'Idea Catcher is a quick notebook for ideas and TODOs'
       }
@@ -151,45 +184,7 @@ $(document).ready(function(){
     if (window.indexedDB) {
         setupDb();
 
-        setTimeout(function () {
-            window.readOpenRequest = window.indexedDB.open(dbName, dbDescription);
-            window.readOpenRequest.onerror = handleError;
         
-    var getAllData = function (db) {
-        console.info("Reading ", objectStoreName);
-        var transaction = db.transaction([objectStoreName]);
-        var objectStore = transaction.objectStore(objectStoreName);
-        var request3 = objectStore.getAll();
-        request3.onerror = handleError;
-        request3.onsuccess = function(event) {
-            //This is being affected by earlier calls...
-            console.info("hmm", request3.result);
-          // Do something with the request.result!
-            for (var i=0; i < request3.result.length; i++) {
-                for (var e in request3.result[i]) {
-                    console.info("Got back ", e, '=', request3.result[i][e]);
-                }
-            }
-        };
-    }; //end function getAllData
-
-
-    var handleDbOpen = function (event) {
-        var db = window.readOpenRequest.result;
-        console.info("size of object stores: ", db.objectStoreNames.length);
-        for (var i=0; i < db.objectStoreNames.length; i++) {
-            console.info("OBJECT STORE: ", db.objectStoreNames[i]);
-        }
-        for (var l in db) {
-            //            console.info("hmm ", l, "=", db[l]);
-        }
-        db.onerror = handleError; //TODO remove other error handlers
-
-                   getAllData(db);
-        
-               }; //end handleDbOpen
-               window.readOpenRequest.onsuccess = handleDbOpen;
-            }, 3000);//end setTimeout
     } // if window.indexedDB
     var timeoutId = null;
     var saveCurrent = function () {
@@ -206,15 +201,35 @@ $(document).ready(function(){
     }
     var initUI = function () {
         $('#display textarea').bind('change, keyup', function (event) {
-            console.info("Make that change");
+                //console.info("Make that change");
             saveCurrent();
         });
-    };
+        $('button').bind('click', function (event) {
+            var meme = createMeme();
+            currentMeme = meme;
+            $('nav ul li.current').removeClass('current');
+            $('nav ul').append("<li id='" + meme.id + "' class='current'>" + meme.title + "</li>");
+            $('#display textarea').val(meme.content);
+        });
+        $('li').live('click', function (event) {
+            $('nav ul li.current').removeClass('current');
+            $('#display textarea').attr('disabled', 'disabled');
+            console.info("I clicked ", $(event.target).attr('id'));
+            $(event.target).addClass('current');
+            getMeme($(event.target).attr('id'), function (meme) {
+                currentMeme = meme;
+                $('#display textarea').val(meme.content);
+                $('#display textarea').attr('disabled', null)
+                    .focus();
+            });
+        });
+    };// end initUI
     setTimeout(function () {    
             $('nav ul li').remove();
             initUI();
             getAllMemes(
                 function (key, value) {
+                    console.info("getAllMemes callback");
                     var s = "";
                     for (var e in value) {
                         s += e + " " + value[e] + " ";
@@ -228,9 +243,10 @@ $(document).ready(function(){
                         $('nav ul li:last-child').addClass('current');
                         currentMeme = value;
                     }
+                    return true;
                 }, 
                 function () {
-                    console.info("Done");
+                    //console.info("Done");
                 }); 
         }, 100);
     
@@ -256,17 +272,7 @@ $(document).ready(function(){
 */
 
 /*
-    var getOneRecord = function (db, id) {
-        var transaction = db.transaction([objectStoreName]);
-        var objectStore = transaction.objectStore(objectStoreName);
-        window.request = objectStore.get(id);
-        window.request.onerror = handleError;
-        window.request.onsuccess = function(event) {
-          // Do something with the request.result!
-          console.info("Name for ", id, " is " + window.request.result.title);
-console.info("Name for ", id, " is " + window.request.result.content);
-        };
-    }; //end function getOneRecord
+    
         */
 
     var deleteData = function (db) {
@@ -286,3 +292,44 @@ console.info("Name for ", id, " is " + window.request.result.content);
             console.info("Delete 555-55-5559, It's gone!");
         };
     }; //end function deleteData
+
+
+/* 
+setTimeout(function () {
+            window.readOpenRequest = window.indexedDB.open(dbName, dbDescription);
+            window.readOpenRequest.onerror = handleError;
+        
+    var getAllData = function (db) {
+        var transaction = db.transaction([objectStoreName]);
+        var objectStore = transaction.objectStore(objectStoreName);
+        var request3 = objectStore.getAll();
+        request3.onerror = handleError;
+        request3.onsuccess = function(event) {
+            //This is being affected by earlier calls...
+          // Do something with the request.result!
+            for (var i=0; i < request3.result.length; i++) {
+                for (var e in request3.result[i]) {
+                    console.info("Got back ", e, '=', request3.result[i][e]);
+                }
+            }
+        };
+    }; //end function getAllData
+
+
+    var handleDbOpen = function (event) {
+        var db = window.readOpenRequest.result;
+        //console.info("size of object stores: ", db.objectStoreNames.length);
+        for (var i=0; i < db.objectStoreNames.length; i++) {
+            //console.info("OBJECT STORE: ", db.objectStoreNames[i]);
+        }
+        for (var l in db) {
+            //            console.info("hmm ", l, "=", db[l]);
+        }
+        db.onerror = handleError; //TODO remove other error handlers
+
+                   getAllData(db);
+        
+               }; //end handleDbOpen
+               window.readOpenRequest.onsuccess = handleDbOpen;
+            }, 3000);//end setTimeout
+*/
