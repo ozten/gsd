@@ -134,6 +134,27 @@ $(document).ready(function(){
             };
         };
     }; //end function getMeme
+    var deleteMeme = function (id, successFn) {
+        var openReq = window.indexedDB.open(dbName, dbDescription);
+        openReq.onerror = handleError;
+        openReq.onsuccess = function (event) {
+            var db = openReq.result;
+            var transaction = db.transaction([objectStoreName], IDBTransaction.READ_WRITE);
+            var addReq;
+            transaction.onerror = handleError;
+            // Do something when all the data is added to the database.
+            transaction.oncomplete = function(event) {
+                console.info("Delete ", id, " complete");
+            };
+
+            var objectStore = transaction.objectStore(objectStoreName);
+            for (var el in objectStore) {
+                console.info(el + " in " + objectStore[el]);
+            }            
+            addReq = objectStore.delete(id); /* remove in spec */
+            addReq.onsuccess = successFn;
+        };
+    }; //end deleteMeme
     /**
      * loadFn is a function that takes to parameters key and value. It 
      * returns a boolean - true to continue reading from the DB.
@@ -157,8 +178,39 @@ $(document).ready(function(){
                 }
             };
         };
-    }
+    }; // end getAllMemes
 
+    var showNewMeme = function () {
+        var meme = createMeme();
+        currentMeme = meme;
+        $('nav ul li.current').removeClass('current');
+        $('nav ul').append("<li id='" + meme.id + "' class='current'>" + 
+                           meme.title + "</li>");
+        $('#display textarea').val(meme.content);
+        $('#display textarea').focus();
+    }; //end showNewMeme
+
+    var showMeme = function (meme_li) {
+        $('#display textarea').attr('disabled', 'disabled');
+        console.info("I clicked ", $(meme_li).attr('id'));
+            $(meme_li).addClass('current');
+            getMeme($(meme_li).attr('id'), function (meme) {
+                currentMeme = meme;
+                $('#display textarea').val(meme.content);
+                $('#display textarea').attr('disabled', null)
+                    .focus();
+            });
+    };//end showMeme
+
+    var deleteCurrent = function () {
+        var oldLi = $('li.current');
+        oldLi.removeClass('current');
+        var id = oldLi.attr('id');
+        deleteMeme(id, function (event) {
+            console.info("Delete SUCCESS removing");
+            oldLi.remove();
+        });
+    };//end deleteCurrent
     $('nav ul li').text('Ok');
 
     if ("webkitIndexedDB" in window) {
@@ -204,24 +256,27 @@ $(document).ready(function(){
                 //console.info("Make that change");
             saveCurrent();
         });
+        $('#delete-meme').bind('click', function (event) {
+            var next = $('li.current').next();
+            var prev = $('li.current').prev();
+            console.info("NEXT = ", next.attr('id'), " ", next.text(),
+                         " PREV = ", prev.attr('id'), " ", prev.text());
+            deleteCurrent();
+            if (next.attr('id')) {
+                showMeme(next.get(0));
+            } else if (prev.attr('id')) {
+                showMeme(prev.get(0));
+            } else {
+                showNewMeme();
+            }
+            return false;
+        });
         $('button').bind('click', function (event) {
-            var meme = createMeme();
-            currentMeme = meme;
-            $('nav ul li.current').removeClass('current');
-            $('nav ul').append("<li id='" + meme.id + "' class='current'>" + meme.title + "</li>");
-            $('#display textarea').val(meme.content);
+            showNewMeme();
         });
         $('li').live('click', function (event) {
             $('nav ul li.current').removeClass('current');
-            $('#display textarea').attr('disabled', 'disabled');
-            console.info("I clicked ", $(event.target).attr('id'));
-            $(event.target).addClass('current');
-            getMeme($(event.target).attr('id'), function (meme) {
-                currentMeme = meme;
-                $('#display textarea').val(meme.content);
-                $('#display textarea').attr('disabled', null)
-                    .focus();
-            });
+            showMeme(event.target);
         });
     };// end initUI
     setTimeout(function () {    
