@@ -69,7 +69,7 @@ $(document).ready(function(){
             };
         }
     }; //end function writeData 
-    var createNextAction = function () {
+    var createNextAction = function (successFn) {
         var next_action = {title: '', content: ''}
         var openReq = window.indexedDB.open(dbName, dbDescription);
         openReq.onerror = handleError;
@@ -84,15 +84,15 @@ $(document).ready(function(){
             };
 
             var objectStore = transaction.objectStore(objectStoreName);
-            for (var i in initialNextActions) {
-                addReq = objectStore.add(next_action);
-                addReq.onsuccess = function(event) {
-                    // event.target.result == initialNextActions[i].ssn
-                    next_action.id = event.target.result;
-                    console.info("Update successeded ", event.target.result);
-                    console.info("Next_Action now looks like", next_action);
-                };
-            }
+
+            addReq = objectStore.add(next_action);
+            addReq.onsuccess = function(event) {
+                next_action.id = event.target.result;
+                successFn(next_action);
+                console.info("Update successeded ", event.target.result);
+                console.info("Next_Action now looks like", next_action);
+            };
+
         };
         return next_action;
     } // end createNextAction
@@ -110,13 +110,13 @@ $(document).ready(function(){
             };
 
             var objectStore = transaction.objectStore(objectStoreName);
-            for (var i in initialNextActions) {
-                addReq = objectStore.put(next_action);
-                addReq.onsuccess = function(event) {
-                    // event.target.result == initialNextActions[i].ssn
-                    console.info("Update successeded ", event.target.result);
-                };
-            }
+
+            addReq = objectStore.put(next_action);
+            addReq.onsuccess = function(event) {
+                // event.target.result == initialNextActions[i].ssn
+                console.info("Update successeded ", event.target.result);
+            };
+
         };
     }; //end updateNextAction
     var getNextAction = function (id, fn) {
@@ -193,14 +193,16 @@ $(document).ready(function(){
     }
 
     var showNewNextAction = function () {
-        var next_action = createNextAction();
-        currentNextAction = next_action;
-        console.info("New next action is id=", next_action.id);
-        $('nav ul li.current').removeClass('current');
-        $('nav ul').append("<li id='" + next_action.id + "' class='current'>" + 
-                           next_action.title + "</li>");
-        $('#display textarea').val(next_action.content);
-        $('#display textarea').focus();
+        var next_action = createNextAction(function () {
+            currentNextAction = next_action;
+            console.info("New next action is id=", next_action.id);
+            $('nav ul li.current').removeClass('current');
+            $('nav ul').append("<li id='" + next_action.id + "' class='current'>" + 
+                               next_action.title + "</li>");
+            $('#display textarea').val(next_action.content);
+            $('#display textarea').focus();
+        });
+        
     }; //end showNewNextAction
 
     var showNextAction = function (na_li) {
