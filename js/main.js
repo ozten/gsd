@@ -129,8 +129,7 @@ $(document).ready(function(){
             var getReq = objectStore.get(id);
             getReq.onerror = handleError;
             getReq.onsuccess = function(event) {
-                // Do something with the request.result!
-                fn(getReq.result);
+                fn(event.target.result);
             };
         };
     }; //end function getMeme
