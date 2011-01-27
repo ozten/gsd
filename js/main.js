@@ -180,6 +180,19 @@ $(document).ready(function(){
         };
     }; // end getAllMemes
 
+    var exportDatabase = function () {
+        var actions = [];
+        getAllMemes(            
+            function (key, value) {
+                actions[actions.length] = value;
+                return true;
+            }, 
+            function () {
+                var w = window.open("data:text/json;charset=utf-8," + JSON.stringify(actions));
+
+            });
+    }
+
     var showNewMeme = function () {
         var meme = createMeme();
         currentMeme = meme;
@@ -271,8 +284,11 @@ $(document).ready(function(){
             }
             return false;
         });
-        $('button').bind('click', function (event) {
+        $('button#new_meme').bind('click', function (event) {
             showNewMeme();
+        });
+        $('button#export_db').bind('click', function (event) {
+            exportDatabase();
         });
         $('li').live('click', function (event) {
             $('nav ul li.current').removeClass('current');
