@@ -5,7 +5,7 @@ $(document).ready(function(){
     var dbDescription = "All your ideas are belong to us.";
     var objectStoreName = "ideas";
 
-    var currentMeme = null;
+    var currentNextAction = null;
 
     var handleError = function(event) {
         // Do something with request.errorCode!
@@ -61,16 +61,16 @@ $(document).ready(function(){
         };
 
         var objectStore = transaction.objectStore(objectStoreName);
-        for (var i in firstIdeas) {
-            addReq = objectStore.add(firstIdeas[i]);
+        for (var i in initialNextActions) {
+            addReq = objectStore.add(initialNextActions[i]);
             addReq.onsuccess = function(event) {
-                // event.target.result == firstIdeas[i].ssn
+                // event.target.result == initialNextActions[i].ssn
                 console.info("Done writing ", event.target.result);
             };
         }
     }; //end function writeData 
-    var createMeme = function () {
-        var meme = {title: '', content: ''}
+    var createNextAction = function () {
+        var next_action = {title: '', content: ''}
         var openReq = window.indexedDB.open(dbName, dbDescription);
         openReq.onerror = handleError;
         openReq.onsuccess = function (event) {
@@ -80,23 +80,23 @@ $(document).ready(function(){
             transaction.onerror = handleError;
             // Do something when all the data is added to the database.
             transaction.oncomplete = function(event) {
-                console.info("create meme complete");
+                console.info("create next_action complete");
             };
 
             var objectStore = transaction.objectStore(objectStoreName);
-            for (var i in firstIdeas) {
-                addReq = objectStore.add(meme);
+            for (var i in initialNextActions) {
+                addReq = objectStore.add(next_action);
                 addReq.onsuccess = function(event) {
-                    // event.target.result == firstIdeas[i].ssn
-                    meme.id = event.target.result;
+                    // event.target.result == initialNextActions[i].ssn
+                    next_action.id = event.target.result;
                     console.info("Update successeded ", event.target.result);
-                    console.info("Meme now looks like", meme);
+                    console.info("Next_Action now looks like", next_action);
                 };
             }
         };
-        return meme;
-    } // end createMeme
-    var updateMeme = function (id, meme) {
+        return next_action;
+    } // end createNextAction
+    var updateNextAction = function (id, next_action) {
         var openReq = window.indexedDB.open(dbName, dbDescription);
         openReq.onerror = handleError;
         openReq.onsuccess = function (event) {
@@ -110,16 +110,16 @@ $(document).ready(function(){
             };
 
             var objectStore = transaction.objectStore(objectStoreName);
-            for (var i in firstIdeas) {
-                addReq = objectStore.put(meme);
+            for (var i in initialNextActions) {
+                addReq = objectStore.put(next_action);
                 addReq.onsuccess = function(event) {
-                    // event.target.result == firstIdeas[i].ssn
+                    // event.target.result == initialNextActions[i].ssn
                     console.info("Update successeded ", event.target.result);
                 };
             }
         };
-    }; //end updateMeme
-    var getMeme = function (id, fn) {
+    }; //end updateNextAction
+    var getNextAction = function (id, fn) {
         var openReq = window.indexedDB.open(dbName, dbDescription);
         openReq.onerror = handleError;
         openReq.onsuccess = function (event) {
@@ -132,8 +132,8 @@ $(document).ready(function(){
                 fn(event.target.result);
             };
         };
-    }; //end function getMeme
-    var deleteMeme = function (id, successFn) {
+    }; //end function getNextAction
+    var deleteNextAction = function (id, successFn) {
         var openReq = window.indexedDB.open(dbName, dbDescription);
         openReq.onerror = handleError;
         openReq.onsuccess = function (event) {
@@ -153,13 +153,13 @@ $(document).ready(function(){
             addReq = objectStore.delete(id); /* remove in spec */
             addReq.onsuccess = successFn;
         };
-    }; //end deleteMeme
+    }; //end deleteNextAction
     /**
      * loadFn is a function that takes to parameters key and value. It 
      * returns a boolean - true to continue reading from the DB.
      * finFn is called when no more data is available.
      */
-    var getAllMemes = function (loadFn, finFn) {
+    var getAllNextActions = function (loadFn, finFn) {
         var openReq = window.indexedDB.open(dbName, dbDescription);
         openReq.onerror = handleError;
         openReq.onsuccess = function (event) {
@@ -177,11 +177,11 @@ $(document).ready(function(){
                 }
             };
         };
-    }; // end getAllMemes
+    }; // end getAllNextActions
 
     var exportDatabase = function () {
         var actions = [];
-        getAllMemes(            
+        getAllNextActions(            
             function (key, value) {
                 actions[actions.length] = value;
                 return true;
@@ -192,33 +192,34 @@ $(document).ready(function(){
             });
     }
 
-    var showNewMeme = function () {
-        var meme = createMeme();
-        currentMeme = meme;
+    var showNewNextAction = function () {
+        var next_action = createNextAction();
+        currentNextAction = next_action;
+        console.info("New next action is id=", next_action.id);
         $('nav ul li.current').removeClass('current');
-        $('nav ul').append("<li id='" + meme.id + "' class='current'>" + 
-                           meme.title + "</li>");
-        $('#display textarea').val(meme.content);
+        $('nav ul').append("<li id='" + next_action.id + "' class='current'>" + 
+                           next_action.title + "</li>");
+        $('#display textarea').val(next_action.content);
         $('#display textarea').focus();
-    }; //end showNewMeme
+    }; //end showNewNextAction
 
-    var showMeme = function (meme_li) {
+    var showNextAction = function (na_li) {
         $('#display textarea').attr('disabled', 'disabled');
-        console.info("I clicked ", $(meme_li).attr('id'));
-            $(meme_li).addClass('current');
-            getMeme($(meme_li).attr('id'), function (meme) {
-                currentMeme = meme;
-                $('#display textarea').val(meme.content);
+        console.info("I clicked ", $(na_li).attr('id'));
+            $(na_li).addClass('current');
+            getNextAction($(na_li).attr('id'), function (next_action) {
+                currentNextAction = next_action;
+                $('#display textarea').val(next_action.content);
                 $('#display textarea').attr('disabled', null)
                     .focus();
             });
-    };//end showMeme
+    };//end showNextAction
 
     var deleteCurrent = function () {
         var oldLi = $('li.current');
         oldLi.removeClass('current');
         var id = oldLi.attr('id');
-        deleteMeme(id, function (event) {
+        deleteNextAction(id, function (event) {
             console.info("Delete SUCCESS removing");
             oldLi.remove();
         });
@@ -235,7 +236,7 @@ $(document).ready(function(){
         alert("You're browser aint gonna work.");
     }
 
-    var firstIdeas = [
+    var initialNextActions = [
     { 
       title: 'Welcome to Idea Catcher',
       content: 'Idea Catcher is a quick notebook for ideas and TODOs'
@@ -256,11 +257,11 @@ $(document).ready(function(){
             clearTimeout(timeoutId);
         }
         timeoutId = setTimeout(function () {
-                currentMeme.content = $('#display textarea').val();
-                currentMeme.title = currentMeme.content.split('\n')[0];
-                $('nav ul li.current').text(currentMeme.title);
+                currentNextAction.content = $('#display textarea').val();
+                currentNextAction.title = currentNextAction.content.split('\n')[0];
+                $('nav ul li.current').text(currentNextAction.title);
                 timeoutId = null;
-                updateMeme(currentMeme['id'], currentMeme);
+                updateNextAction(currentNextAction['id'], currentNextAction);
             }, 300);
     }
     var initUI = function () {
@@ -268,38 +269,38 @@ $(document).ready(function(){
                 //console.info("Make that change");
             saveCurrent();
         });
-        $('#delete-meme').bind('click', function (event) {
+        $('#delete-next-action').bind('click', function (event) {
             var next = $('li.current').next();
             var prev = $('li.current').prev();
             console.info("NEXT = ", next.attr('id'), " ", next.text(),
                          " PREV = ", prev.attr('id'), " ", prev.text());
             deleteCurrent();
             if (next.attr('id')) {
-                showMeme(next.get(0));
+                showNextAction(next.get(0));
             } else if (prev.attr('id')) {
-                showMeme(prev.get(0));
+                showNextAction(prev.get(0));
             } else {
-                showNewMeme();
+                showNewNextAction();
             }
             return false;
         });
-        $('button#new_meme').bind('click', function (event) {
-            showNewMeme();
+        $('button#new_next_action').bind('click', function (event) {
+            showNewNextAction();
         });
         $('button#export_db').bind('click', function (event) {
             exportDatabase();
         });
         $('li').live('click', function (event) {
             $('nav ul li.current').removeClass('current');
-            showMeme(event.target);
+            showNextAction(event.target);
         });
     };// end initUI
     setTimeout(function () {    
             $('nav ul li').remove();
             initUI();
-            getAllMemes(
+            getAllNextActions(
                 function (key, value) {
-                    console.info("getAllMemes callback");
+                    console.info("getAllNextActions callback");
                     var s = "";
                     for (var e in value) {
                         s += e + " " + value[e] + " ";
@@ -311,7 +312,7 @@ $(document).ready(function(){
                         $('span', d).hide();
                         $('textarea').val(value.content);
                         $('nav ul li:last-child').addClass('current');
-                        currentMeme = value;
+                        currentNextAction = value;
                     }
                     return true;
                 }, 
