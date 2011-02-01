@@ -16,8 +16,18 @@
   </header>
 
   <div id="main">
-    <nav><ul><li>Loading Ideas</ul></nav>
+    <nav id="contexts">
+        <ul>
+          <li id="unknown-context" class="context"><div>@&quest;</div>
+            <ul id="loading-next-actions"><li class="next-action">Loading Ideas</ul>
+          </li>
+        </ul></nav>
     <a href="#" id="delete-next-action">Delete</a>
+    <label for="context-selector">Context:</label>
+    <select id="context-selector">
+      <option value="0">@?</option>
+      <option value="-1">New Context...</option>
+    </select>
     <div id="display" class="loading"><span>Loading...</span><textarea></textarea></div>
     
   </div>
