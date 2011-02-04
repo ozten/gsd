@@ -473,9 +473,21 @@ $(document).ready(function(){
                     console.info("Loading Context ", key, " ", value.name);
                     usedContexts.push(value);
                     $('#context-selector').append("<option value='" + value.name + "'>" + value.name + "</option>");
+                    //JQM
+                    var c = $('#unknown-context-item').clone();
+                    var cid = idify(value.name);
+                    $('a', c).text("@" + value.name);
+                    $('.ui-li-count', c).text(0);
+                    c.attr('id', cid);                    
+                    $('#contexts-list').append(c);
+                    var cpage = $('#unknown-context-page').clone();
+                    cpage.attr('id', cid + "-page");
+                    $('h2', cpage).text(value.name);
+                        $('body').append(cpage);
                     return true;
                 }, 
                 function () {
+                    //TODO refresh pages, listitem
                     console.info("Done loading contexts");
                 });
         }, 100);

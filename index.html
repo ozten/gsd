@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="en" class="no-js">
 <head><meta charset="utf-8">
+<link rel="stylesheet" href="js/libs/jquery.mobile-1.0a3/jquery.mobile-1.0a3.css" />
+
 <title>Getting Shit Done</title>
 <meta name="description" 
       content="A web based notebook for catching ideas and staying on track.">
@@ -31,8 +33,41 @@
     
   </div>
   <footer></footer>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.js"></script>
-<script>!window.jQuery && document.write(unescape('%3Cscript src="js/libs/jquery-1.4.2.js"%3E%3C/script%3E'))</script>
+
+<div id="contexts-page" data-role="page">
+    <div data-role="header">
+	<h1>GSD</h1>
+    </div><!-- /header -->
+    <div data-role="content">
+        <ul id="contexts-list" data-role="listview" data-inset="true" data-theme="c">
+            <li data-role="list-divider" data-theme="b">Contexts</li>
+
+            <li id="unknown-context-item"><a href="unknown-context-page">@?</a><div class="ui-li-count">3</div></li>
+        </ul>
+    </div><!-- /content -->
+
+    <div data-role="footer">
+        <h4>Getting Shit Done</h4>
+    </div><!-- /header -->
+</div>
+<div id="unknown-context-page" data-role="page">
+    <div data-role="header" data-inline="false">
+	<h1>GSD</h1>
+        <a href="" class="ui-btn-right" data-theme="b">New Action Item</a>
+    </div><!-- /header -->
+    <div data-role="content">
+        <h1>Action Items</h1>
+        <h2>@Unknown Context</h2>
+    </div>
+    <div data-role="footer">
+        <h4>Getting Shit Done</h4>
+    </div><!-- /header -->
+</div><!-- /page -->
+
+<script src="http://code.jquery.com/jquery-1.5.min.js"></script>
+<script>!window.jQuery && document.write(unescape('%3Cscript src="js/libs/jquery-1.5.min.js"%3E%3C/script%3E'))</script>
+<script src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"></script>
+<script>!!window.jQuery.mobile && document.write(unescape('%3Cscript src="js/libs/jquery.mobile-1.0a3/jquery.mobile-1.0a3.js"%3E%3C/script%3E'))</script>
 <script src="js/main.js"></script>
 </body>
 </html>
