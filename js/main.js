@@ -253,18 +253,12 @@ $(document).ready(function(){
 
             });
     }
-    var idify = function (context) {
-        if (context) {
-            return context.replace(' ', '_');
-        } else {
-            return 'unknown-context';
-        }
-    };// end idify
+    
     var contextUlSelector = function (next_action) {
         if (next_action.context) {            
             //ensure
             console.info("calling idify 1 [", next_action.context, "]");
-            var nac = idify(next_action.context);
+            var nac = gsd.idify(next_action.context);
             console.info("nac is ", nac, " ", $('li#' + nac).size());
             if ($('li#' + nac).size() == 0) {
                 // aok nac isn't "safe" id="Grocery Store"...
@@ -287,7 +281,7 @@ $(document).ready(function(){
             $(contextUl).append("<li id=na'" + next_action.id + "' class='next-action current'>" + 
                                next_action.title + "</li>");
             if (next_action.context) {
-                $('#context-selector').val(next_action.context);                
+                $('#context-selector').val(next_action.context);
             } else {
                 $('#context-selector').val(0);
             }
@@ -416,8 +410,8 @@ $(document).ready(function(){
         // nav ul li.context ul must also already exist!
         var cna = currentNextAction;
         if (cna.context) {        
-            console.info("calling idify 2 ", 'li#' + idify(cna.context) + '.context ul li#na' + cna.id);
-            if ($('li#' + idify(cna.context) + '.context ul li#na' + cna.id).size() > 0) {
+            console.info("calling idify 2 ", 'li#' + gsd.idify(cna.context) + '.context ul li#na' + cna.id);
+            if ($('li#' + gsd.idify(cna.context) + '.context ul li#na' + cna.id).size() > 0) {
                 // No Op
                 console.info("It's in there");
             } else {
@@ -425,9 +419,9 @@ $(document).ready(function(){
                 console.info("calling idify 3");
                 console.info(cna.id);
                 console.info("Moving ", 'li#na' + cna.id, " (" + $('li#na' + cna.id).size() + ") into ",
-                             'li#' + idify(cna.context) + '.context ul', " (" + $(idify(cna.context) + '.context ul').size() +")");
+                             'li#' + gsd.idify(cna.context) + '.context ul', " (" + $(gsd.idify(cna.context) + '.context ul').size() +")");
                 console.info("calling idify 4");
-                $('li#' + idify(cna.context) + '.context ul').append(
+                $('li#' + gsd.idify(cna.context) + '.context ul').append(
                                                                      $('li#na' + cna.id).remove());
 
             }
@@ -441,10 +435,12 @@ $(document).ready(function(){
             $('li#unknown-context').append("<ul></ul>");
             getAllNextActions(
                 function (key, value) {
-                    var s = "";
-                    for (var e in value) {
-                        s += e + " " + value[e] + " ";
-                    }
+                    //JQM
+                    var contextPage = gsd.view.ensureContextPage(
+                            gsd.idify(value));
+                    gsd.view.ensureNextAction(
+                            gsd.idify(value), key, value);
+                    /*
                     var contextUl = contextUlSelector(value);
                     console.info("contextUl = ", contextUl);
                     $(contextUl).append("<li class='next-action' id='na" + key + "'>" + value.title + "</li>");
@@ -462,6 +458,7 @@ $(document).ready(function(){
                         $('nav ul li.next-action:last-child').addClass('current');
                         currentNextAction = value;
                     }
+                    */
                     return true;
                 }, 
                 function () {
@@ -475,15 +472,14 @@ $(document).ready(function(){
                     $('#context-selector').append("<option value='" + value.name + "'>" + value.name + "</option>");
                     //JQM
                     var c = $('#unknown-context-item').clone();
-                    var cid = idify(value.name);
+                    var cid = gsd.idify(value.name);
                     $('a', c).text("@" + value.name);
+                    $('a', c).attr("href", "#" + cid + "-page");
                     $('.ui-li-count', c).text(0);
                     c.attr('id', cid);                    
                     $('#contexts-list').append(c);
-                    var cpage = $('#unknown-context-page').clone();
-                    cpage.attr('id', cid + "-page");
-                    $('h2', cpage).text(value.name);
-                        $('body').append(cpage);
+                    var cpage = gsd.view.ensureContextPage(cid);
+                    $('h2', cpage).text("@" + value.name);
                     return true;
                 }, 
                 function () {

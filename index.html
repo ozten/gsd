@@ -23,13 +23,7 @@
             <ul id="loading-next-actions"><li class="next-action">Loading Ideas</ul>
           </li>
         </ul></nav>
-    <a href="#" id="delete-next-action">Delete</a>
-    <label for="context-selector">Context:</label>
-    <select id="context-selector">
-      <option value="0">@?</option>
-      <option value="-1">New Context...</option>
-    </select>
-    <div id="display" class="loading"><span>Loading...</span><textarea></textarea></div>
+    
     
   </div>
   <footer></footer>
@@ -39,11 +33,13 @@
 	<h1>GSD</h1>
     </div><!-- /header -->
     <div data-role="content">
-        <ul id="contexts-list" data-role="listview" data-inset="true" data-theme="c">
+        <div>
+        <ul id="contexts-list" data-role="listview" data-inset="true" data-theme="c" data-inline="true">
             <li data-role="list-divider" data-theme="b">Contexts</li>
 
             <li id="unknown-context-item"><a href="unknown-context-page">@?</a><div class="ui-li-count">3</div></li>
         </ul>
+        </div>
     </div><!-- /content -->
 
     <div data-role="footer">
@@ -58,16 +54,37 @@
     <div data-role="content">
         <h1>Action Items</h1>
         <h2>@Unknown Context</h2>
+        <div class="action-items">
+            <div id="#na-1-div" data-role="collapsible">
+              <h3>Fake</h3>
+              <p>This is a Fake entry</p>
+            </div>
+        </div>
     </div>
     <div data-role="footer">
         <h4>Getting Shit Done</h4>
     </div><!-- /header -->
 </div><!-- /page -->
+<div id="next-action-editor" data-role="page">
+  <div data-role="content">
+    <form>
+      <a href="#" id="delete-next-action">Delete</a>
+      <label for="context-selector">Context:</label>
+      <select id="context-selector">
+        <option value="0">@?</option>
+        <option value="-1">New Context...</option>
+      </select>
+      <div id="display" class="loading"><textarea></textarea></div>
+    </form>
+  </div>
+</div><!-- /page -->
 
 <script src="http://code.jquery.com/jquery-1.5.min.js"></script>
 <script>!window.jQuery && document.write(unescape('%3Cscript src="js/libs/jquery-1.5.min.js"%3E%3C/script%3E'))</script>
 <script src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"></script>
-<script>!!window.jQuery.mobile && document.write(unescape('%3Cscript src="js/libs/jquery.mobile-1.0a3/jquery.mobile-1.0a3.js"%3E%3C/script%3E'))</script>
+<script>!window.jQuery.mobile && document.write(unescape('%3Cscript src="js/libs/jquery.mobile-1.0a3/jquery.mobile-1.0a3.js"%3E%3C/script%3E'));</script>
+<script src="js/gsd/view.js"></script>
+<script src="js/gsd.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

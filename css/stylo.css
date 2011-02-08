@@ -22,3 +22,5 @@ nav ul li {
 #display textarea {
   width: 98%;
 }
+/* Testing hack */
+[data-role=page], #contexts-page { width: 600px; }
