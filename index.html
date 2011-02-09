@@ -48,16 +48,17 @@
 </div>
 <div id="unknown-context-page" data-role="page">
     <div data-role="header" data-inline="false">
-	<h1>GSD</h1>
+	<h1><a href="#contexts-page">GSD</a></h1>
         <a href="" class="ui-btn-right" data-theme="b">New Action Item</a>
     </div><!-- /header -->
     <div data-role="content">
         <h1>Action Items</h1>
         <h2>@Unknown Context</h2>
         <div class="action-items">
-            <div id="#na-1-div" data-role="collapsible">
+            <div id="#na-1-div" data-role="collapsible" data-collapsed="true">
               <h3>Fake</h3>
               <p>This is a Fake entry</p>
+              <a href="#next-action-editor-page" data-rel="dialog">Edit</a>
             </div>
         </div>
     </div>
@@ -65,18 +66,24 @@
         <h4>Getting Shit Done</h4>
     </div><!-- /header -->
 </div><!-- /page -->
-<div id="next-action-editor" data-role="page">
+<div id="next-action-editor-page" data-role="page">
+<div data-role="header" data-inline="false">
+	<h1>Edit <span class="next-action-title"></span></h1>
+    </div><!-- /header -->
   <div data-role="content">
     <form>
       <a href="#" id="delete-next-action">Delete</a>
       <label for="context-selector">Context:</label>
       <select id="context-selector">
-        <option value="0">@?</option>
+        <option value="0" selected>@?</option>
         <option value="-1">New Context...</option>
       </select>
       <div id="display" class="loading"><textarea></textarea></div>
     </form>
   </div>
+    <div data-role="footer">
+        <a href="#" data-rel="back">Done</a>
+    </div><!-- /header -->
 </div><!-- /page -->
 
 <script src="http://code.jquery.com/jquery-1.5.min.js"></script>
