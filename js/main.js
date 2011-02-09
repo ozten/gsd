@@ -1,23 +1,16 @@
 /* Firebug is crashy on stale IndexedDB Objects(???), only log primitives  or use Minefield and WebConsole */
 
 $(document).ready(function(){
-    var dbName = "IdeaCatcherDBv13";
-    var dbDescription = "All your ideas are belong to us.";
-    var objectStoreName = "ideas";
+    
     var contextOSName = "contexts";
 
-    var currentNextAction = null; /* TODO this is actually bad, umhkay. Fresh dbName to repro crash */
+    gsd.currentNextAction = null; /* TODO this is actually bad, umhkay. Fresh gsd.model.dbName to repro crash */
 
     var currentContext = "@?";
     var usedContexts = [];
-
-    var handleError = function(event) {
-        // Do something with request.errorCode!
-        console.info("ERROR handler");
-        console.info("ERROR: #", event.target.errorCode);
-    };
+    
     var setupDb = function (event) {
-        var req = window.indexedDB.open(dbName, dbDescription),
+        var req = window.indexedDB.open(gsd.model.dbName, gsd.model.dbDescription),
             migrations = [
                 0, 
                 function (req) {
@@ -25,7 +18,7 @@ $(document).ready(function(){
                     return function(event) {
                         var trans = req.result;
                         var db = trans.db;
-                        objectStore = db.createObjectStore(objectStoreName, {keyPath: 'id', autoIncrement: true}, false);
+                        objectStore = db.createObjectStore(gsd.model.objectStoreName, {keyPath: 'id', autoIncrement: true}, false);
                         objectStore.createIndex("title", "id", { unique: false });
                         migrate(event);//bootstrap next iteration
                     }
@@ -61,52 +54,52 @@ $(document).ready(function(){
                 console.info("Database version:", dbVersion);
                 if ((dbVersion + 1) < migrations.length) {
                     setVerReq = req.result.setVersion(dbVersion + 1);
-                    req.result.onerror = handleError;
+                    req.result.onerror = gsd.model.handleError;
                     setVerReq.onsuccess = (migrations[dbVersion + 1])(setVerReq);
-                    setVerReq.onerror = handleError;
+                    setVerReq.onerror = gsd.model.handleError;
                     
                 }
             },
         setVerReq, dbVersion;
-        req.onerror = handleError;
+        req.onerror = gsd.model.handleError;
         req.onsuccess = migrate;
 
     };//end setupDb
     var writeData = function (db) {
-        var transaction = db.transaction([objectStoreName], IDBTransaction.READ_WRITE);
+        var transaction = db.transaction([gsd.model.objectStoreName], IDBTransaction.READ_WRITE);
         var addReq;
-        transaction.onerror = handleError;
+        transaction.onerror = gsd.model.handleError;
         // Do something when all the data is added to the database.
         transaction.oncomplete = function(event) {
             console.info("All done writing data!");
         };
 
-        var objectStore = transaction.objectStore(objectStoreName);
+        var objectStore = transaction.objectStore(gsd.model.objectStoreName);
         for (var i in initialNextActions) {
-            currentNextAction = initialNextActions[i];
+            gsd.currentNextAction = initialNextActions[i];
             addReq = objectStore.add(initialNextActions[i]);
             addReq.onsuccess = function(event) {
                 // event.target.result == initialNextActions[i].ssn
                 console.info("Done writing ", event.target.result);
-                currentNextAction = event.target.result;
+                gsd.currentNextAction = event.target.result;
             };
         }
     }; //end function writeData 
     var createNextAction = function (successFn) {
         var next_action = {title: '', content: ''}
-        var openReq = window.indexedDB.open(dbName, dbDescription);
-        openReq.onerror = handleError;
+        var openReq = window.indexedDB.open(gsd.model.dbName, gsd.model.dbDescription);
+        openReq.onerror = gsd.model.handleError;
         openReq.onsuccess = function (event) {
             var db = openReq.result;
-            var transaction = db.transaction([objectStoreName], IDBTransaction.READ_WRITE);
+            var transaction = db.transaction([gsd.model.objectStoreName], IDBTransaction.READ_WRITE);
             var addReq;
-            transaction.onerror = handleError;
+            transaction.onerror = gsd.model.handleError;
             // Do something when all the data is added to the database.
             transaction.oncomplete = function(event) {
                 console.info("create next_action complete");
             };
 
-            var objectStore = transaction.objectStore(objectStoreName);
+            var objectStore = transaction.objectStore(gsd.model.objectStoreName);
 
             addReq = objectStore.add(next_action);
             addReq.onsuccess = function(event) {
@@ -119,70 +112,24 @@ $(document).ready(function(){
         };
         return next_action;
     } // end createNextAction
-    var nextActionIDFromDOM = function (domID) {
-        if ('string' == typeof domID && domID.length > 2) {
-            return domID.substring(2);
-        } else if ('number' == typeof domID) {
-            return domID;
-        } else {
-            console.info("ASSERTION FAILED... nextActionIDFromDOM given ", domID);
-        }            
-    };// end nextActionIDFromDOM
-    var updateNextAction = function (domID, next_action) {
-        var id = nextActionIDFromDOM(domID);
-        var openReq = window.indexedDB.open(dbName, dbDescription);
-        openReq.onerror = handleError;
-        openReq.onsuccess = function (event) {
-            var db = openReq.result;
-            var transaction = db.transaction([objectStoreName], IDBTransaction.READ_WRITE);
-            var addReq;
-            transaction.onerror = handleError;
-            // Do something when all the data is added to the database.
-            transaction.oncomplete = function(event) {
-                console.info("Update ", id, " complete");
-            };
-
-            var objectStore = transaction.objectStore(objectStoreName);
-
-            addReq = objectStore.put(next_action);
-            addReq.onsuccess = function(event) {
-                // event.target.result == initialNextActions[i].ssn
-                console.info("Update successeded ", event.target.result);
-            };
-
-        };
-    }; //end updateNextAction
-    var getNextAction = function (domID, fn) {
-        var id = nextActionIDFromDOM(domID);
-        console.info("getNextAction (", id, ")");
-        var openReq = window.indexedDB.open(dbName, dbDescription);
-        openReq.onerror = handleError;
-        openReq.onsuccess = function (event) {
-            var db = openReq.result;
-            var transaction = db.transaction([objectStoreName]);
-            var objectStore = transaction.objectStore(objectStoreName);
-            var getReq = objectStore.get(id);
-            getReq.onerror = handleError;
-            getReq.onsuccess = function(event) {
-                fn(event.target.result);
-            };
-        };
-    }; //end function getNextAction
+    
+    
+    
     var deleteNextAction = function (domID, successFn) {
-        var id = nextActionIDFromDOM(domID);
-        var openReq = window.indexedDB.open(dbName, dbDescription);
-        openReq.onerror = handleError;
+        var id = gsd.view.nextActionIDFromDOM(domID);
+        var openReq = window.indexedDB.open(gsd.model.dbName, gsd.model.dbDescription);
+        openReq.onerror = gsd.model.handleError;
         openReq.onsuccess = function (event) {
             var db = openReq.result;
-            var transaction = db.transaction([objectStoreName], IDBTransaction.READ_WRITE);
+            var transaction = db.transaction([gsd.model.objectStoreName], IDBTransaction.READ_WRITE);
             var addReq;
-            transaction.onerror = handleError;
+            transaction.onerror = gsd.model.handleError;
             // Do something when all the data is added to the database.
             transaction.oncomplete = function(event) {
                 console.info("Delete ", id, " complete");
             };
 
-            var objectStore = transaction.objectStore(objectStoreName);
+            var objectStore = transaction.objectStore(gsd.model.objectStoreName);
             for (var el in objectStore) {
                 console.info(el + " in " + objectStore[el]);
             }            
@@ -196,12 +143,12 @@ $(document).ready(function(){
      * finFn is called when no more data is available.
      */
     var getAllNextActions = function (loadFn, finFn) {
-        var openReq = window.indexedDB.open(dbName, dbDescription);
-        openReq.onerror = handleError;
+        var openReq = window.indexedDB.open(gsd.model.dbName, gsd.model.dbDescription);
+        openReq.onerror = gsd.model.handleError;
         openReq.onsuccess = function (event) {
             var db = event.target.result;
-            var trans = db.transaction([objectStoreName]);
-            var objectStore = trans.objectStore(objectStoreName);
+            var trans = db.transaction([gsd.model.objectStoreName]);
+            var objectStore = trans.objectStore(gsd.model.objectStoreName);
             objectStore.openCursor().onsuccess = function (cursorEvent) {
                 var cursor = cursorEvent.target.result;
                 if (cursor) {
@@ -222,8 +169,8 @@ $(document).ready(function(){
      */
     var getAllContexts = function (loadFn, finFn) {
         /* TODO aok if this really works this way, abstract */
-        var openReq = window.indexedDB.open(dbName, dbDescription);
-        openReq.onerror = handleError;
+        var openReq = window.indexedDB.open(gsd.model.dbName, gsd.model.dbDescription);
+        openReq.onerror = gsd.model.handleError;
         openReq.onsuccess = function (event) {
             var db = event.target.result;
             var trans = db.transaction([contextOSName]);
@@ -273,7 +220,7 @@ $(document).ready(function(){
     };//end contextUlSelector
     var showNewNextAction = function () {
         var next_action = createNextAction(function (next_action) {
-            currentNextAction = next_action;
+            gsd.currentNextAction = next_action;
             console.info("New next action is id=na", next_action.id);
             $('li.next-action.current').removeClass('current');
             var contextUl = contextUlSelector(next_action);
@@ -296,10 +243,10 @@ $(document).ready(function(){
         var id = $(na_li).attr('id');
         console.info("I clicked ", id);
             $(na_li).addClass('current');
-            getNextAction($(na_li).attr('id'), function (next_action) {
+            gsd.model.getNextAction($(na_li).attr('id'), function (next_action) {
                     if (next_action) {
                         console.info("Saving next_action as current", next_action);
-                        currentNextAction = next_action;
+                        gsd.currentNextAction = next_action;
                         if (next_action.context) {
                             $('#context-selector').val(next_action.context);
                         } else {
@@ -355,26 +302,17 @@ $(document).ready(function(){
             clearTimeout(timeoutId);
         }
         timeoutId = setTimeout(function () {
-                currentNextAction.content = $('#display textarea').val();
-                currentNextAction.context = $('context-selector').val();
-                currentNextAction.title = currentNextAction.content.split('\n')[0];
-                $('nav ul li.next-action.current').text(currentNextAction.title);
+                gsd.currentNextAction.content = $('#display textarea').val();
+                gsd.currentNextAction.context = $('context-selector').val();
+                gsd.currentNextAction.title = gsd.currentNextAction.content.split('\n')[0];
+                $('nav ul li.next-action.current').text(gsd.currentNextAction.title);
                 timeoutId = null;
                 // Use custom events to decouple
-                updateNextAction(currentNextAction.id, currentNextAction);
+                gsd.model.updateNextAction(gsd.currentNextAction.id, gsd.currentNextAction);
             }, 300);
     };
     var initUI = function () {
-        $('#context-selector').bind('change', function () {
-            currentNextAction.context = $('#context-selector').val();
-            console.info("changed new value=", currentNextAction.context);
-            if ("0" == currentNextAction.context) {
-                currentNextAction.context = 'unknown-context';
-            }
-            console.info("normaled to new value=", currentNextAction.context);
-            updateNextAction(currentNextAction['id'], currentNextAction);
-            moveNALIContext();
-        });
+        
         $('#display textarea').bind('change, keyup', function (event) {
                 //console.info("Make that change");
             saveCurrent();
@@ -404,11 +342,18 @@ $(document).ready(function(){
             $('nav ul li.next-action.current').removeClass('current');
             showNextAction(event.target);
         });
+        $('.na-edit').live('click', function (e) {
+            e.preventDefault();
+            var id = parseInt($(this).parents('.next-action').attr('data-na-id'));
+            console.info("Hark, an edit event calleth", id);
+            $(this).trigger('start-edit-next-action', [id]);
+            return false;
+        });
     };// end initUI
     var moveNALIContext = function () {
         // nav ul li.context for context must already exist!
         // nav ul li.context ul must also already exist!
-        var cna = currentNextAction;
+        var cna = gsd.currentNextAction;
         if (cna.context) {        
             console.info("calling idify 2 ", 'li#' + gsd.idify(cna.context) + '.context ul li#na' + cna.id);
             if ($('li#' + gsd.idify(cna.context) + '.context ul li#na' + cna.id).size() > 0) {
@@ -436,10 +381,10 @@ $(document).ready(function(){
             getAllNextActions(
                 function (key, value) {
                     //JQM
-                    var contextPage = gsd.view.ensureContextPage(
-                            gsd.idify(value));
-                    gsd.view.ensureNextAction(
-                            gsd.idify(value), key, value);
+                    var cid = gsd.idify(value.context);
+                    gsd.view.ensureContextListItem(cid, value.context);
+                    var contextPage = gsd.view.ensureContextPage(cid);
+                    gsd.view.ensureNextAction(cid, key, value);
                     /*
                     var contextUl = contextUlSelector(value);
                     console.info("contextUl = ", contextUl);
@@ -469,15 +414,11 @@ $(document).ready(function(){
                 function (key, value) {
                     console.info("Loading Context ", key, " ", value.name);
                     usedContexts.push(value);
+                    //TODO use context.id instead of name for value
                     $('#context-selector').append("<option value='" + value.name + "'>" + value.name + "</option>");
                     //JQM
-                    var c = $('#unknown-context-item').clone();
                     var cid = gsd.idify(value.name);
-                    $('a', c).text("@" + value.name);
-                    $('a', c).attr("href", "#" + cid + "-page");
-                    $('.ui-li-count', c).text(0);
-                    c.attr('id', cid);                    
-                    $('#contexts-list').append(c);
+                    gsd.view.ensureContextListItem(cid, value.name);
                     var cpage = gsd.view.ensureContextPage(cid);
                     $('h2', cpage).text("@" + value.name);
                     return true;
@@ -487,5 +428,6 @@ $(document).ready(function(){
                     console.info("Done loading contexts");
                 });
         }, 100);
+    //TODO get ride of globals
     
 });//end document ready
