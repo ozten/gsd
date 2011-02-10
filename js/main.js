@@ -6,9 +6,6 @@ $(document).ready(function(){
 
     gsd.currentNextAction = null; /* TODO this is actually bad, umhkay. Fresh gsd.model.dbName to repro crash */
 
-    var currentContext = "@?";
-    var usedContexts = [];
-    
     var setupDb = function (event) {
         var req = window.indexedDB.open(gsd.model.dbName, gsd.model.dbDescription),
             migrations = [
@@ -51,7 +48,7 @@ $(document).ready(function(){
                 // .source IDBFactory, .result IDBDatabase, req.LOADING, req.DONE, req.readyState
                 dbVersion = parseInt(req.result.version);
                 dbVersion = isNaN(dbVersion) ? 0 : dbVersion;
-                console.info("Database version:", dbVersion);
+                //console.info("Database version:", dbVersion);
                 if ((dbVersion + 1) < migrations.length) {
                     setVerReq = req.result.setVersion(dbVersion + 1);
                     req.result.onerror = gsd.model.handleError;
@@ -71,7 +68,7 @@ $(document).ready(function(){
         transaction.onerror = gsd.model.handleError;
         // Do something when all the data is added to the database.
         transaction.oncomplete = function(event) {
-            console.info("All done writing data!");
+            //console.info("All done writing data!");
         };
 
         var objectStore = transaction.objectStore(gsd.model.objectStoreName);
@@ -80,7 +77,7 @@ $(document).ready(function(){
             addReq = objectStore.add(initialNextActions[i]);
             addReq.onsuccess = function(event) {
                 // event.target.result == initialNextActions[i].ssn
-                console.info("Done writing ", event.target.result);
+                //console.info("Done writing ", event.target.result);
                 gsd.currentNextAction = event.target.result;
             };
         }
@@ -96,7 +93,7 @@ $(document).ready(function(){
             transaction.onerror = gsd.model.handleError;
             // Do something when all the data is added to the database.
             transaction.oncomplete = function(event) {
-                console.info("create next_action complete");
+                //console.info("create next_action complete");
             };
 
             var objectStore = transaction.objectStore(gsd.model.objectStoreName);
@@ -105,8 +102,8 @@ $(document).ready(function(){
             addReq.onsuccess = function(event) {
                 next_action.id = event.target.result;
                 successFn(next_action);
-                console.info("Update successeded ", event.target.result);
-                console.info("Next_Action now looks like", next_action);
+                //console.info("Update successeded ", event.target.result);
+                //console.info("Next_Action now looks like", next_action);
             };
 
         };
@@ -126,12 +123,12 @@ $(document).ready(function(){
             transaction.onerror = gsd.model.handleError;
             // Do something when all the data is added to the database.
             transaction.oncomplete = function(event) {
-                console.info("Delete ", id, " complete");
+                //console.info("Delete ", id, " complete");
             };
 
             var objectStore = transaction.objectStore(gsd.model.objectStoreName);
             for (var el in objectStore) {
-                console.info(el + " in " + objectStore[el]);
+                //console.info(el + " in " + objectStore[el]);
             }            
             addReq = objectStore.delete(id); /* remove in spec */
             addReq.onsuccess = successFn;
@@ -204,9 +201,9 @@ $(document).ready(function(){
     var contextUlSelector = function (next_action) {
         if (next_action.context) {            
             //ensure
-            console.info("calling idify 1 [", next_action.context, "]");
+            //console.info("calling idify 1 [", next_action.context, "]");
             var nac = gsd.idify(next_action.context);
-            console.info("nac is ", nac, " ", $('li#' + nac).size());
+            //console.info("nac is ", nac, " ", $('li#' + nac).size());
             if ($('li#' + nac).size() == 0) {
                 // aok nac isn't "safe" id="Grocery Store"...
                 // Should we use context.id? or make them safe? boo.
@@ -221,7 +218,7 @@ $(document).ready(function(){
     var showNewNextAction = function () {
         var next_action = createNextAction(function (next_action) {
             gsd.currentNextAction = next_action;
-            console.info("New next action is id=na", next_action.id);
+            //console.info("New next action is id=na", next_action.id);
             $('li.next-action.current').removeClass('current');
             var contextUl = contextUlSelector(next_action);
             
@@ -241,11 +238,11 @@ $(document).ready(function(){
     var showNextAction = function (na_li) {
         $('#display textarea').attr('disabled', 'disabled');
         var id = $(na_li).attr('id');
-        console.info("I clicked ", id);
+
             $(na_li).addClass('current');
             gsd.model.getNextAction($(na_li).attr('id'), function (next_action) {
                     if (next_action) {
-                        console.info("Saving next_action as current", next_action);
+                        //console.info("Saving next_action as current", next_action);
                         gsd.currentNextAction = next_action;
                         if (next_action.context) {
                             $('#context-selector').val(next_action.context);
@@ -266,7 +263,7 @@ $(document).ready(function(){
         oldLi.removeClass('current');
         var id = oldLi.attr('id');
         deleteNextAction(id, function (event) {
-            console.info("Delete SUCCESS removing");
+                //console.info("Delete SUCCESS removing");
             oldLi.remove();
         });
     };//end deleteCurrent
@@ -345,7 +342,6 @@ $(document).ready(function(){
         $('.na-edit').live('click', function (e) {
             e.preventDefault();
             var id = parseInt($(this).parents('.next-action').attr('data-na-id'));
-            console.info("Hark, an edit event calleth", id);
             $(this).trigger('start-edit-next-action', [id]);
             return false;
         });
@@ -355,17 +351,10 @@ $(document).ready(function(){
         // nav ul li.context ul must also already exist!
         var cna = gsd.currentNextAction;
         if (cna.context) {        
-            console.info("calling idify 2 ", 'li#' + gsd.idify(cna.context) + '.context ul li#na' + cna.id);
             if ($('li#' + gsd.idify(cna.context) + '.context ul li#na' + cna.id).size() > 0) {
                 // No Op
-                console.info("It's in there");
             } else {
                 // Move it 
-                console.info("calling idify 3");
-                console.info(cna.id);
-                console.info("Moving ", 'li#na' + cna.id, " (" + $('li#na' + cna.id).size() + ") into ",
-                             'li#' + gsd.idify(cna.context) + '.context ul', " (" + $(gsd.idify(cna.context) + '.context ul').size() +")");
-                console.info("calling idify 4");
                 $('li#' + gsd.idify(cna.context) + '.context ul').append(
                                                                      $('li#na' + cna.id).remove());
 
@@ -383,7 +372,7 @@ $(document).ready(function(){
                     //JQM
                     var cid = gsd.idify(value.context);
                     gsd.view.ensureContextListItem(cid, value.context);
-                    var contextPage = gsd.view.ensureContextPage(cid);
+                    var contextPage = gsd.view.ensureContextPage(cid, value.context);
                     gsd.view.ensureNextAction(cid, key, value);
                     /*
                     var contextUl = contextUlSelector(value);
@@ -412,20 +401,18 @@ $(document).ready(function(){
                 });
             getAllContexts(
                 function (key, value) {
-                    console.info("Loading Context ", key, " ", value.name);
-                    usedContexts.push(value);
+                    //console.info("Loading Context ", key, " ", value.name);
                     //TODO use context.id instead of name for value
                     $('#context-selector').append("<option value='" + value.name + "'>" + value.name + "</option>");
                     //JQM
                     var cid = gsd.idify(value.name);
                     gsd.view.ensureContextListItem(cid, value.name);
-                    var cpage = gsd.view.ensureContextPage(cid);
-                    $('h2', cpage).text("@" + value.name);
+                    //TODO switch to value.id
+                    gsd.view.ensureContextPage(cid, value.name);                    
                     return true;
                 }, 
                 function () {
-                    //TODO refresh pages, listitem
-                    console.info("Done loading contexts");
+                    //console.info("Done loading contexts");
                 });
         }, 100);
     //TODO get ride of globals

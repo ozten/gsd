@@ -24,18 +24,20 @@ gsd.view = {
         $('a', c).attr("href", "#" + cid + "-page");
         $('.ui-li-count', c).text(0);
         c.attr('id', cid);//TODO, this needs a better 
-        console.info("cid == ", cid);
         $('#contexts-list').append(c);
     }, //end ensureContextListItem
-    ensureContextPage: function (contextId) {
+    ensureContextPage: function (contextId, name) {
         var page = $('#' + contextId + "-page");
         if (page.size() == 0) {
             page = $('#unknown-context-page').clone();
             page.attr('id', contextId + "-page");
-            // JQM Hack... without this it can't navigate
-            page.attr('data-url', contextId + "-page");
+            page.attr('data-url', contextId + "-page"); // JQM Hack... without this it can't navigate
+            page.attr('data-db-id', contextId);//TODO make these numeric
+            page.find('h2').text("@" + name);
+            page.attr('data-name', name);
             $('body').append(page);
-        }
+        } 
+
         return page;
     }, // end ensureContextPage
     naDOMSelector: '[data-role=collapsible]',
@@ -51,7 +53,7 @@ gsd.view = {
     }, // end nextActionIDFromDOM
 
     ensureNextAction: function (contextId, id, nextAction) {
-        console.info("ensureNextAction contextId=", contextId, " nextAction=", nextAction);
+        //console.info("ensureNextAction contextId=", contextId, " nextAction=", nextAction);
 
         var page = $('#' + contextId + "-page");
 
