@@ -2,6 +2,32 @@ var gsd = gsd ? gsd : {};
 
 gsd.view = {
     init: function () {
+        $('.na-new').live('click', function (event) {
+            // Prep data for editor
+            // We know current context or default to ?            
+            // disable then enable and setupNextActionEditor would be good...
+            gsd.model.createNextAction(function (next_action) {
+                gsd.currentNextAction = next_action;
+                gsd.view.setupNextActionEditor(next_action.id);
+                //TODO add na-created event
+                //console.info("New next action is id=na", next_action.id);
+                /*
+                  $('li.next-action.current').removeClass('current');
+                  var contextUl = contextUlSelector(next_action);
+                  $(contextUl).append("<li id=na'" + next_action.id + "' class='next-action current'>" + 
+                  next_action.title + "</li>");
+                  if (next_action.context) {
+                  $('#context-selector').val(next_action.context);
+                  } else {
+                  $('#context-selector').val(0);
+                  }
+                  $('#display textarea').val(next_action.content);
+                  $('#display textarea').focus();
+                */
+            });// end createNextAction callback
+
+            return true;
+        });
         $('.na-edit').live('start-edit-next-action', function (event, id) {
             gsd.view.setupNextActionEditor(id);
         });
@@ -92,12 +118,18 @@ gsd.view = {
             var editor = $('#next-action-editor-page');
             $('.next-action-title', editor).text(na.title);
             $('textarea', editor).val(na.content);
-            var select = $('select option[value=' + na.context + ']', editor);
-            if (select.size() == 0) {
-                $('select option[value=0]', editor);
-            }
-            select.attr('selected', true);
-            
+            //var select = $('select option[value=' + na.context + ']', editor);
+            //Do we ever populate this correctly?
+            $('#context-selector option').each(function (i, option) {
+                console.info("Comparing ", $(option).text(), " with ", na.context);
+                if ($(option).text() == na.context) {
+                    console.info("Selecting.. ");
+                    $(option).attr('selected', true);
+                }
+                
+            });
+            console.info($('option:selected'));
+            $('#context-selector').selectmenu('refresh', true);
 
         });
     },

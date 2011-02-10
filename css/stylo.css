@@ -23,4 +23,4 @@ nav ul li {
   width: 98%;
 }
 /* Testing hack */
-[data-role=page], #contexts-page { width: 600px; }
+[data-role=page], [data-role=dialog], #contexts-page,  { xwidth: 600px; }

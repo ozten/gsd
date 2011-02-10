@@ -82,33 +82,7 @@ $(document).ready(function(){
             };
         }
     }; //end function writeData 
-    var createNextAction = function (successFn) {
-        var next_action = {title: '', content: ''}
-        var openReq = window.indexedDB.open(gsd.model.dbName, gsd.model.dbDescription);
-        openReq.onerror = gsd.model.handleError;
-        openReq.onsuccess = function (event) {
-            var db = openReq.result;
-            var transaction = db.transaction([gsd.model.objectStoreName], IDBTransaction.READ_WRITE);
-            var addReq;
-            transaction.onerror = gsd.model.handleError;
-            // Do something when all the data is added to the database.
-            transaction.oncomplete = function(event) {
-                //console.info("create next_action complete");
-            };
-
-            var objectStore = transaction.objectStore(gsd.model.objectStoreName);
-
-            addReq = objectStore.add(next_action);
-            addReq.onsuccess = function(event) {
-                next_action.id = event.target.result;
-                successFn(next_action);
-                //console.info("Update successeded ", event.target.result);
-                //console.info("Next_Action now looks like", next_action);
-            };
-
-        };
-        return next_action;
-    } // end createNextAction
+    
     
     
     

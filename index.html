@@ -51,7 +51,8 @@
      data-page-type="context"  data-db-id="-1" data-name="?">
     <div data-role="header" data-inline="false">
 	<h1><a href="#contexts-page">GSD</a></h1>
-        <a href="" class="ui-btn-right" data-theme="b">New Action Item</a>
+        <a href="#next-action-editor-page" class="ui-btn-right na-new" 
+           data-theme="b" data-rel="dialog">New Action Item</a>
     </div><!-- /header -->
     <div data-role="content">
         <h1>Action Items</h1>
@@ -77,8 +78,8 @@
       <a href="#" id="delete-next-action">Delete</a>
       <label for="context-selector">Context:</label>
       <select id="context-selector">
-        <option value="0" selected>@?</option>
-        <option value="-1">New Context...</option>
+        <option value="-1" selected>@?</option>
+        <option value="new">New Context...</option>
       </select>
       <div id="display" class="loading"><textarea></textarea></div>
     </form>
