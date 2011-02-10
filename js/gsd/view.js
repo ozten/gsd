@@ -31,6 +31,14 @@ gsd.view = {
         $('.na-edit').live('start-edit-next-action', function (event, id) {
             gsd.view.setupNextActionEditor(id);
         });
+        $('.na-delete').live('click', function (event) {
+            var na = $(this).parents('.next-action'),
+                id = parseInt(na.attr('data-na-id'));
+            gsd.model.deleteNextAction(id, function () {
+                na.remove();
+                // TODO $(document).trigger('na-delete');
+            });
+        });
         // Handle Editor Context Changes
         $('#context-selector').bind('change', function () {
             gsd.currentNextAction.context = $('#context-selector').val().trim();

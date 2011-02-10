@@ -85,6 +85,25 @@ gsd.model = {
 
         };
     }, //end updateNextAction
+    deleteNextAction: function (domID, successFn) {
+        var id = gsd.view.nextActionIDFromDOM(domID);
+        var openReq = window.indexedDB.open(gsd.model.dbName, gsd.model.dbDescription);
+        openReq.onerror = gsd.model.handleError;
+        openReq.onsuccess = function (event) {
+            var db = openReq.result;
+            var transaction = db.transaction([gsd.model.objectStoreName], IDBTransaction.READ_WRITE);
+            var addReq;
+            transaction.onerror = gsd.model.handleError;
+            // Do something when all the data is added to the database.
+            transaction.oncomplete = function(event) {
+                //console.info("Delete ", id, " complete");
+            };
+
+            var objectStore = transaction.objectStore(gsd.model.objectStoreName);
+            addReq = objectStore.delete(id); /* remove in spec */
+            addReq.onsuccess = successFn;
+        };
+    }, //end deleteNextAction
 };
 
 gsd.model.init();
