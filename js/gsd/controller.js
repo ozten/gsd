@@ -1,7 +1,7 @@
 var gsd = gsd ? gsd : {};
+gsd.cont = gsd.cont ? gsd.cont : {};
 
-gsd.cont = {
-    init: function () {
+gsd.cont.init = function () {
         $(document).bind('pagebeforeshow', function (e) {
             console.info("pagebeforeshow", this);
         });
@@ -26,11 +26,20 @@ gsd.cont = {
             }
             
         });
-    },
-    currentContext: { //Default context
+        $('#export_db').bind('click', function (event) {
+            gsd.exportDatabase();
+            return false;
+        });
+        $('.na-edit').live('click', function (e) {
+            e.preventDefault();
+            var id = parseInt($(this).parents('.next-action').attr('data-na-id'));
+            $(this).trigger('start-edit-next-action', [id]);
+            return false;
+        });
+};
+gsd.cont.currentContext = { //Default context
         id: -1,
         name: '?'
-    },
 };
 
 gsd.cont.init();

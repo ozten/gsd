@@ -1,7 +1,7 @@
 var gsd = gsd ? gsd : {};
+gsd.view = gsd.view ? gsd.view : {};
 
-gsd.view = {
-    init: function () {
+gsd.view.init = function () {
         $('.na-new').live('click', function (event) {
             // Prep data for editor
             // We know current context or default to ?            
@@ -34,36 +34,47 @@ gsd.view = {
         $('.na-delete').live('click', function (event) {
             var na = $(this).parents('.next-action'),
                 id = parseInt(na.attr('data-na-id'));
+            event.preventDefault();
+            console.info("Deleting ", id, " aka ", na.attr('data-na-id'));
             gsd.model.deleteNextAction(id, function () {
                 na.remove();
                 // TODO $(document).trigger('na-delete');
+                return false;
             });
         });
         // Handle Editor Context Changes
         $('#context-selector').bind('change', function () {
             gsd.currentNextAction.context = $('#context-selector').val().trim();
             if ("0" == gsd.currentNextAction.context) {
-                gsd.currentNextAction.context = 'unknown-context';
+                gsd.currentNextAction.context = 'ct--1';
             }
             gsd.model.updateNextAction(gsd.currentNextAction['id'], gsd.currentNextAction);
             //TODO with custom event moveNALIContext();
         });
-    }, // end init
-    ensureContextListItem: function (cid, name) {
+}; // end init
+gsd.view.context_dom_id = function (contextName) {
+        if (!! contextName ) {
+            return contextName.replace(' ', '_');//uhm, no
+        } else {
+            return 'ct--1';
+        }
+}; // end context_dom_id
+gsd.view.ensureContextListItem = function (cid, name) {
         var cli = $('#' + cid);
+        console.info("Looking for ", cli, " found ", cli.size());
         if (1 == cli.size()) return;
 
-        var c = $('#unknown-context-item').clone();
+        var c = $('#ct--1-item').clone();
         $('a', c).text("@" + name);
         $('a', c).attr("href", "#" + cid + "-page");
         $('.ui-li-count', c).text(0);
         c.attr('id', cid);//TODO, this needs a better 
         $('#contexts-list').append(c);
-    }, //end ensureContextListItem
-    ensureContextPage: function (contextId, name) {
+}; //end ensureContextListItem
+gsd.view.ensureContextPage = function (contextId, name) {
         var page = $('#' + contextId + "-page");
         if (page.size() == 0) {
-            page = $('#unknown-context-page').clone();
+            page = $('#ct--1-page').clone();
             page.attr('id', contextId + "-page");
             page.attr('data-url', contextId + "-page"); // JQM Hack... without this it can't navigate
             page.attr('data-db-id', contextId);//TODO make these numeric
@@ -73,10 +84,10 @@ gsd.view = {
         } 
 
         return page;
-    }, // end ensureContextPage
-    naDOMSelector: '[data-role=collapsible]',
+}; // end ensureContextPage
+gsd.view.naDOMSelector = '[data-role=collapsible]';
 
-    nextActionIDFromDOM: function (domID) {
+gsd.view.nextActionIDFromDOM = function (domID) {
         if ('string' == typeof domID && domID.length > 2) {
             return domID.substring(2);
         } else if ('number' == typeof domID) {
@@ -84,9 +95,9 @@ gsd.view = {
         } else {
             console.info("ASSERTION FAILED... nextActionIDFromDOM given ", domID);
         }            
-    }, // end nextActionIDFromDOM
+}; // end nextActionIDFromDOM
 
-    ensureNextAction: function (contextId, id, nextAction) {
+gsd.view.ensureNextAction = function (contextId, id, nextAction) {
         //console.info("ensureNextAction contextId=", contextId, " nextAction=", nextAction);
 
         var page = $('#' + contextId + "-page");
@@ -119,8 +130,8 @@ gsd.view = {
             $('form', page).append('<textarea id="na' + id + '-textarea">' + nextAction.content + '</textarea>');
         } 
         */
-    },
-    setupNextActionEditor: function (id) {
+};
+gsd.view.setupNextActionEditor = function (id) {
         gsd.model.getNextAction(id, function (na) {
             gsd.currentNextAction = na;
             var editor = $('#next-action-editor-page');
@@ -140,7 +151,7 @@ gsd.view = {
             $('#context-selector').selectmenu('refresh', true);
 
         });
-    },
 };
+
 
 gsd.view.init();

@@ -1,16 +1,25 @@
 var gsd = gsd ? gsd : {};
+gsd.model = gsd.model ? gsd.model : {};
 
-gsd.model = {
-    init: function () {},
-    dbName: "IdeaCatcherDBv13",
-    dbDescription: "All your ideas are belong to us.",
-    objectStoreName: "ideas",
-    handleError: function(event) {
+gsd.model.init = function () {};
+gsd.model.dbName = "IdeaCatcherDBv13";
+gsd.model.dbDescription = "All your ideas are belong to us.";
+gsd.model.objectStoreName = "ideas";
+gsd.model.contextOSName = "contexts";
+gsd.model.handleError = function(event) {
         // Do something with request.errorCode!
         console.info("ERROR handler");
         console.info("ERROR: #", event.target.errorCode);
-    },
-    createNextAction: function (successFn) {
+};
+
+gsd.model.initialNextActions = [
+    { 
+      title: 'Welcome to Idea Catcher',
+      content: 'Idea Catcher is a quick notebook for ideas and TODOs'
+      }
+    ];
+
+gsd.model.createNextAction = function (successFn) {
         var next_action = {title: '', content: '', 
                            context: gsd.cont.currentContext.name};
         
@@ -38,8 +47,8 @@ gsd.model = {
 
         };
         return next_action;
-    }, // end createNextAction
-    getNextAction: function (domID, fn) {
+}; // end createNextAction
+gsd.model.getNextAction = function (domID, fn) {
         var id = gsd.view.nextActionIDFromDOM(domID);
         console.info("getNextAction (", id, ")");
         var openReq = window.indexedDB.open(gsd.model.dbName, gsd.model.dbDescription);
@@ -54,9 +63,9 @@ gsd.model = {
                 fn(event.target.result);
             };
         };
-    }, //end function getNextAction
+}; //end function getNextAction
 
-    updateNextAction: function (domID, next_action) {
+updateNextAction = function (domID, next_action) {
         console.info("updateNA for ", domID, " ", next_action.context);
         var id = gsd.view.nextActionIDFromDOM(domID);
         var openReq = window.indexedDB.open(gsd.model.dbName, gsd.model.dbDescription);
@@ -84,8 +93,8 @@ gsd.model = {
             };
 
         };
-    }, //end updateNextAction
-    deleteNextAction: function (domID, successFn) {
+}; //end updateNextAction
+gsd.model.deleteNextAction = function (domID, successFn) {
         var id = gsd.view.nextActionIDFromDOM(domID);
         var openReq = window.indexedDB.open(gsd.model.dbName, gsd.model.dbDescription);
         openReq.onerror = gsd.model.handleError;
@@ -103,7 +112,6 @@ gsd.model = {
             addReq = objectStore.delete(id); /* remove in spec */
             addReq.onsuccess = successFn;
         };
-    }, //end deleteNextAction
-};
+}; //end deleteNextAction
 
 gsd.model.init();

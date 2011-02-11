@@ -20,9 +20,10 @@
         <ul id="contexts-list" data-role="listview" data-inset="true" data-theme="c" data-inline="true">
             <li data-role="list-divider" data-theme="b">Contexts</li>
 
-            <li id="unknown-context-item"><a href="unknown-context-page">@?</a><div class="ui-li-count">0</div></li>
+            <li id="ct--1-item"><a href="ct--1-page">@?</a><div class="ui-li-count">0</div></li>
         </ul>
         </div>
+        <a href="#" id="export_db" data-role="button" data-inline="true">Export</a>
     </div><!-- /content -->
 
     <div data-role="footer">
@@ -30,7 +31,7 @@
     </div><!-- /header -->
 </div>
 <!-- Prototype for all Context Pages -->
-<div id="unknown-context-page" data-role="page" 
+<div id="ct--1-page" data-role="page" 
      data-page-type="context"  data-db-id="-1" data-name="?">
     <div data-role="header" data-inline="false">
 	<h1>GSD</h1>
@@ -65,7 +66,6 @@
     </div><!-- /header -->
   <div data-role="content">
     <form>
-      <a href="#" id="delete-next-action">Delete</a>
       <label for="context-selector">Context:</label>
       <select id="context-selector">
         <option value="-1" selected>@?</option>
@@ -84,10 +84,16 @@
 <script src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"></script>
 <script>!window.jQuery.mobile && document.write(unescape('%3Cscript src="js/libs/jquery.mobile-1.0a3/jquery.mobile-1.0a3.js"%3E%3C/script%3E'));</script>
 
+<script src="js/gsd.js"></script>
+<script src="js/gsd/db.js"></script>
+<script src="js/gsd/db/indexeddb.js"></script>
+
+
 <script src="js/gsd/model.js"></script>
 <script src="js/gsd/view.js"></script>
 <script src="js/gsd/controller.js"></script>
-<script src="js/gsd.js"></script>
+
+
 <script src="js/main.js"></script>
 </body>
 </html>
