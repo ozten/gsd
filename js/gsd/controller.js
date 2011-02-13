@@ -101,10 +101,13 @@ gsd.cont.saveCurrent = function () {
         }
         gsd.cont.timeoutId = setTimeout(function () {
                 gsd.currentNextAction.content = $('#display textarea').val();
-                gsd.currentNextAction.context = $('context-selector').val();
+                gsd.currentNextAction.context = $('#context-selector').val();
                 gsd.currentNextAction.title = gsd.currentNextAction.content.split('\n')[0];
                 $('nav ul li.next-action.current').text(gsd.currentNextAction.title);
                 gsd.cont.timeoutId = null;
+
+                console.info("gsd.currentNextAction.context=", gsd.currentNextAction.context);
+
                 // Use custom events to decouple
                 gsd.model.updateNextAction(gsd.currentNextAction.id, gsd.currentNextAction);
             }, 300);

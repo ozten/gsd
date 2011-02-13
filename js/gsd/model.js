@@ -25,7 +25,7 @@ gsd.model.initialNextActions = [
 gsd.model.createNextAction = function (successFn) {
         var next_action = {title: '', content: '', 
                            context: gsd.cont.currentContext.id};
-        
+        console.info("Creating new na with context.id=", gsd.cont.currentContext.id);
         var openReq = window.indexedDB.open(gsd.model.dbName, gsd.model.dbDescription);
         openReq.onerror = gsd.model.handleError;
         openReq.onsuccess = function (event) {
@@ -68,9 +68,9 @@ gsd.model.getNextAction = function (domID, fn) {
             };
         };
 }; //end function getNextAction
-
+//aok Why domID? can't we use next_action.id? who uses this function?
 gsd.model.updateNextAction = function (domID, next_action) {
-        console.info('updateNextAction domid=', domID);
+    console.info('updateNextAction domid=', domID, 'na id=', next_action.id, ' context=', next_action.context);
         var id = gsd.view.nextActionIDFromDOM(domID);
         var openReq = window.indexedDB.open(gsd.model.dbName, gsd.model.dbDescription);
         console.info('updateNextAction derived id=', id);
@@ -92,8 +92,8 @@ gsd.model.updateNextAction = function (domID, next_action) {
             addReq.onsuccess = function(event) {
                 // event.target.result == initialNextActions[i].ssn
 
-                gsd.model.getNextAction(domID, function (na) {
-                    console.info("clean read gives us: ", na.context);
+                gsd.model.getNextAction(id, function (na) {
+                    console.info("clean read gives us: ", na);
                 });
                 
             };

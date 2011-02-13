@@ -9,23 +9,11 @@ gsd.view.init = function () {
             // We know current context or default to ?            
             // disable then enable and setupNextActionEditor would be good...
             gsd.model.createNextAction(function (next_action) {
+                console.info("na created context=", next_action.context);
                 gsd.currentNextAction = next_action;
                 gsd.view.setupNextActionEditor(next_action.id);
                 //TODO add na-created event
                 //console.info("New next action is id=na", next_action.id);
-                /*
-                  $('li.next-action.current').removeClass('current');
-                  var contextUl = contextUlSelector(next_action);
-                  $(contextUl).append("<li id=na'" + next_action.id + "' class='next-action current'>" + 
-                  next_action.title + "</li>");
-                  if (next_action.context) {
-                  $('#context-selector').val(next_action.context);
-                  } else {
-                  $('#context-selector').val(0);
-                  }
-                  $('#display textarea').val(next_action.content);
-                  $('#display textarea').focus();
-                */
             });// end createNextAction callback
 
             return true;
@@ -176,6 +164,7 @@ gsd.view.setupNextActionEditor = function (id) {
     console.info('setupNextActionEditor id=', id);
         gsd.model.getNextAction(id, function (na) {
             gsd.currentNextAction = na;
+            console.info("editor fresh read is na id=", na.id, " context=", na.context);
             var editor = $('#next-action-editor-page');
             $('.next-action-title', editor).text(na.title);
             $('textarea', editor).val(na.content);
