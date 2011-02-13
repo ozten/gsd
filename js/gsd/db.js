@@ -10,8 +10,12 @@ gsd.db.init = function () {
 };
 
 gsd.db.setupDb = function () {
-        console.info("Calling setup");
-        gsd.db.indx.setupDb();
+    console.info("Calling setup");
+    gsd.db.indx.setupDb();
+};
+
+gsd.db.getContextById = function (id, loadFn) {
+    gsd.db.indx.getContextById(id, loadFn);
 };
 
 gsd.db.init();

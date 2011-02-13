@@ -1,3 +1,4 @@
+console.info("eval model");
 var gsd = gsd ? gsd : {};
 gsd.model = gsd.model ? gsd.model : {};
 
@@ -19,9 +20,11 @@ gsd.model.initialNextActions = [
       }
     ];
 
+/* context on next action is now an DB ID and not the name of that item!!! */
+
 gsd.model.createNextAction = function (successFn) {
         var next_action = {title: '', content: '', 
-                           context: gsd.cont.currentContext.name};
+                           context: gsd.cont.currentContext.id};
         
         var openReq = window.indexedDB.open(gsd.model.dbName, gsd.model.dbDescription);
         openReq.onerror = gsd.model.handleError;
@@ -49,8 +52,9 @@ gsd.model.createNextAction = function (successFn) {
         return next_action;
 }; // end createNextAction
 gsd.model.getNextAction = function (domID, fn) {
+    console.info('getNextAction domid=', domID);
         var id = gsd.view.nextActionIDFromDOM(domID);
-        console.info("getNextAction (", id, ")");
+        console.info("getNextAction derived id=(", id, ")");
         var openReq = window.indexedDB.open(gsd.model.dbName, gsd.model.dbDescription);
         openReq.onerror = gsd.model.handleError;
         openReq.onsuccess = function (event) {
@@ -65,10 +69,12 @@ gsd.model.getNextAction = function (domID, fn) {
         };
 }; //end function getNextAction
 
-updateNextAction = function (domID, next_action) {
-        console.info("updateNA for ", domID, " ", next_action.context);
+gsd.model.updateNextAction = function (domID, next_action) {
+        console.info('updateNextAction domid=', domID);
         var id = gsd.view.nextActionIDFromDOM(domID);
         var openReq = window.indexedDB.open(gsd.model.dbName, gsd.model.dbDescription);
+        console.info('updateNextAction derived id=', id);
+
         openReq.onerror = gsd.model.handleError;
         openReq.onsuccess = function (event) {
             var db = openReq.result;
@@ -85,7 +91,7 @@ updateNextAction = function (domID, next_action) {
             addReq = objectStore.put(next_action);
             addReq.onsuccess = function(event) {
                 // event.target.result == initialNextActions[i].ssn
-                console.info("Update successeded ", event.target.result);
+
                 gsd.model.getNextAction(domID, function (na) {
                     console.info("clean read gives us: ", na.context);
                 });
@@ -95,8 +101,10 @@ updateNextAction = function (domID, next_action) {
         };
 }; //end updateNextAction
 gsd.model.deleteNextAction = function (domID, successFn) {
+        console.info('deleteNextAction domid=', domID);
         var id = gsd.view.nextActionIDFromDOM(domID);
         var openReq = window.indexedDB.open(gsd.model.dbName, gsd.model.dbDescription);
+        console.info('deleteNextAction derived id=', id);
         openReq.onerror = gsd.model.handleError;
         openReq.onsuccess = function (event) {
             var db = openReq.result;
