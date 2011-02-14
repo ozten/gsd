@@ -36,17 +36,12 @@ gsd.cont.init = function () {
         });
         gsd.db.indx.getAllContexts(
             function (key, value) {
-                console.info("Loading Contextz ", key, " ", value.name);
-                //TODO use context.id instead of name for value
                 $('#context-selector').append("<option value='" + value.id + "'>@" + value.name + "</option>");
                 //JQM
                 var cli_id = gsd.view.context_dom_id(key);
-                //aok do same here we did above using ensureContextListItem
-                console.info("Loading Context cli_id=", cli_id, " id=", key, " name=", value);
                 gsd.view.ensureContextListItem(key, cli_id, value.name);
                 var cpage_id = gsd.view.context_dom_page_id(key);
                 console.info("cpage_id ", cpage_id);
-                //TODO switch to value.id
                 gsd.view.ensureContextPage(value.id, cpage_id, value.name);
                 return true;
             }, 
@@ -100,14 +95,15 @@ gsd.cont.saveCurrent = function () {
             clearTimeout(gsd.cont.timeoutId);
         }
         gsd.cont.timeoutId = setTimeout(function () {
+                gsd.currentNextAction.title = $('#display textarea').val().split('\n')[0]; 
                 gsd.currentNextAction.content = $('#display textarea').val();
                 gsd.currentNextAction.context = $('#context-selector').val();
-                gsd.currentNextAction.title = gsd.currentNextAction.content.split('\n')[0];
-                $('nav ul li.next-action.current').text(gsd.currentNextAction.title);
+
                 gsd.cont.timeoutId = null;
 
                 console.info("gsd.currentNextAction.context=", gsd.currentNextAction.context);
-
+                //gsd.view.ensureNextAction(gsd.currentNextAction.context, gsd.currentNextAction.id, gsd.currentNextAction);
+                gsd.view.updateNextAction(gsd.currentNextAction);
                 // Use custom events to decouple
                 gsd.model.updateNextAction(gsd.currentNextAction.id, gsd.currentNextAction);
             }, 300);
