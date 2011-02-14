@@ -105,7 +105,7 @@ gsd.cont.saveCurrent = function () {
                 //gsd.view.ensureNextAction(gsd.currentNextAction.context, gsd.currentNextAction.id, gsd.currentNextAction);
                 gsd.view.updateNextAction(gsd.currentNextAction);
                 // Use custom events to decouple
-                gsd.model.updateNextAction(gsd.currentNextAction.id, gsd.currentNextAction);
+                gsd.db.updateNextAction(gsd.currentNextAction.id, gsd.currentNextAction, function () {});
             }, 300);
 };
 gsd.cont.exportDatabase = function () {

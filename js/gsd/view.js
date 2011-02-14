@@ -8,7 +8,7 @@ gsd.view.init = function () {
             // Prep data for editor
             // We know current context or default to ?            
             // disable then enable and setupNextActionEditor would be good...
-            gsd.model.createNextAction(function (next_action) {
+            gsd.db.createNextAction(function (next_action) {
                 console.info("na created context=", next_action.context);
                 gsd.currentNextAction = next_action;                
                 
@@ -26,7 +26,7 @@ gsd.view.init = function () {
             var na = $(this).parents('.next-action'),
                 id = parseInt(na.attr('data-na-id'));
             event.preventDefault();
-            gsd.model.deleteNextAction(id, function () {
+            gsd.db.deleteNextAction(id, function () {
                 na.remove();
                 // TODO $(document).trigger('na-delete');
                 return false;
@@ -39,7 +39,7 @@ gsd.view.init = function () {
             var prevC = gsd.currentNextAction.context;
             gsd.currentNextAction.context = $('#context-selector').val();
             console.info("context changed from ", prevC, " to ", gsd.currentNextAction.context);
-            gsd.model.updateNextAction(gsd.currentNextAction['id'], gsd.currentNextAction);
+            gsd.db.updateNextAction(gsd.currentNextAction['id'], gsd.currentNextAction, function () {});
             //TODO with custom event moveNALIContext();
         });
 }; // end init
@@ -196,7 +196,7 @@ gsd.view.updateNextAction = function (next_action) {
 };//end updateNextAction
 gsd.view.setupNextActionEditor = function (id) {
     console.info('setupNextActionEditor id=', id);
-        gsd.model.getNextAction(id, function (na) {
+        gsd.db.getNextAction(id, function (na) {
             gsd.currentNextAction = na;
             console.info("editor fresh read is na id=", na.id, " context=", na.context);
             var editor = $('#next-action-editor-page');
