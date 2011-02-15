@@ -84,10 +84,26 @@
 <script src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"></script>
 <script>!window.jQuery.mobile && document.write(unescape('%3Cscript src="js/libs/jquery.mobile-1.0a3/jquery.mobile-1.0a3.js"%3E%3C/script%3E'));</script>
 
-<!-- script src="js/gsd/db/indexeddb.js"></script -->
+<script>
+if (! window.console) {
+    window.console = {
+        log: function () {
 
-<script src="js/gsd/db.js"></script>
+        }, 
+        info: function () {
+
+        },
+        warn: function () {
+
+        },
+        error: function (msg) {
+            alert(msg);
+        }
+    };
+}
+</script>
 <script src="js/gsd/model.js"></script>
+<script src="js/gsd/db.js"></script>
 <script src="js/gsd/view.js"></script>
 <script src="js/gsd/controller.js"></script>
 <script src="js/gsd.js"></script>
