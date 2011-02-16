@@ -18,7 +18,7 @@ gsd.db.indx.handleError = function(event) {
 };
 
 
-gsd.db.indx.setupDb = function (event) {
+gsd.db.indx.setupDb = function (completeFn) {
         var req = window.indexedDB.open(gsd.db.indx.dbName, gsd.db.indx.dbDescription),
             migrations = [
                 0, 
@@ -67,6 +67,9 @@ gsd.db.indx.setupDb = function (event) {
                     setVerReq.onsuccess = (migrations[dbVersion + 1])(setVerReq);
                     setVerReq.onerror = gsd.db.indx.handleError;
                     
+                } else {
+                    console.info("Finished with migrations, continuing");
+                    completeFn();
                 }
             },
         setVerReq, dbVersion;

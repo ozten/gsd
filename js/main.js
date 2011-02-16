@@ -4,7 +4,8 @@ $(document).ready(function(){
     gsd.currentNextAction = null; /* TODO this is actually bad, umhkay. Fresh gsd.model.dbName to repro crash */
 
     
-    gsd.db.setupDb();
+    gsd.db.setupDb(
+        gsd.cont.populateUI);
     
 
 });//end document ready

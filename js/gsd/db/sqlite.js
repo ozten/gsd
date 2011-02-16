@@ -13,9 +13,9 @@ gsd.db.sqlite.handleError = function (error) {
     console.log("DB Error: ");
     console.log(error);
 };
-gsd.db.sqlite.setupDb = function () {
+gsd.db.sqlite.setupDb = function (completeFn) {
     console.log("SQLITE: Calling setupDb");
-    gsd.db.conn = openDatabase(gsd.db.dbName + 'g', '1.0', gsd.db.dbDescription, 1 * 1024 * 1024); // 1 MB
+    gsd.db.conn = openDatabase(gsd.db.dbName + 'h', '1.0', gsd.db.dbDescription, 1 * 1024 * 1024); // 1 MB
     gsd.db.conn.transaction(function (tx) {
             console.log("In a transaction");
             gsd.db.sqlite.setupDb.version = 0;
@@ -29,6 +29,8 @@ gsd.db.sqlite.setupDb = function () {
                             console.log(row);
                             gsd.db.sqlite.setupDb.version = row.version;
                         }
+                        console.info("Done with migrations, right?");
+                        completeFn();
                     });
             } catch (e) { 
                 alert('Unhandled Exception in setupDb read schema' + e.toString()); 
@@ -59,6 +61,9 @@ gsd.db.sqlite.setupDb = function () {
                         tx.executeSql("INSERT INTO contexts (id, name) VALUES (NULL, ?)", [name]);
                     }
                     console.log("Finished schema migration 1");
+
+                    console.log("Finished ALL migrations");
+                    completeFn();
                     //window.location.reload();
                 }, gsd.db.sqlite.handleError); //end inner
         }, gsd.db.sqlite.handleError);//end outer transaction

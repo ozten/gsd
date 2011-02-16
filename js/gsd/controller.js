@@ -3,10 +3,10 @@ var gsd = gsd ? gsd : {};
 gsd.cont = gsd.cont ? gsd.cont : {};
 
 gsd.cont.init = function () {
-    gsd.cont.init.na_count = 0;
-        gsd.db.indx.getAllNextActions(
+}; // end init
+gsd.cont.populateUI = function () {
+        gsd.db.getAllNextActions(
             function (key, value) {
-                gsd.cont.init.na_count++;
                 //JQM
                 ctxId = parseInt(value.context);
                 console.info("Loading na id=", value.id, " title=", value.title, " context=", value.context, " ctxId=", ctxId, " nextaction=", value);
@@ -34,7 +34,7 @@ gsd.cont.init = function () {
                 //console.info("Done");
                 $('#loading-next-actions').remove();
         });
-        gsd.db.indx.getAllContexts(
+        gsd.db.getAllContexts(
             function (key, value) {
                 $('#context-selector').append("<option value='" + value.id + "'>@" + value.name + "</option>");
                 //JQM
@@ -83,8 +83,7 @@ gsd.cont.init = function () {
                 //console.info("Make that change");
             gsd.cont.saveCurrent();
         });
-
-};//end init
+};//end populateUI
 gsd.cont.currentContext = { //Default context
         id: -1,
         name: '?'
@@ -110,7 +109,7 @@ gsd.cont.saveCurrent = function () {
 };
 gsd.cont.exportDatabase = function () {
     var actions = [];
-    gsd.db.indx.getAllNextActions(            
+    gsd.db.getAllNextActions(            
         function (key, value) {
             actions[actions.length] = value;
             return true;
