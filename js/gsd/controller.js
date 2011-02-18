@@ -19,7 +19,6 @@ gsd.cont.populateUI = function () {
                     gsd.view.ensureContextPage(context.id, cpage_id, context.name);
                     console.info("Must ", value.id, "na ct page=", $('#' + cpage_id));
                     gsd.view.ensureNextAction(context.id, key, value);
-                    console.info("Must ", value.id, "na div=", $('#na' + key + "-div"));
                 };
                 if (ctxId > 0) {
                     gsd.db.getContextById(ctxId, contextLoaded);
@@ -83,6 +82,7 @@ gsd.cont.populateUI = function () {
                 //console.info("Make that change");
             gsd.cont.saveCurrent();
         });
+        //$.mobile.changePage('#contexts-page');
 };//end populateUI
 gsd.cont.currentContext = { //Default context
         id: -1,

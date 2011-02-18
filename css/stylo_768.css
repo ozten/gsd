@@ -1,0 +1,7 @@
+/*.landscape div#contexts-page.ui-page {*/
+#contexts-nav {
+    max-width: 320px;
+}
+[data-page-type=context] {
+  margin-left: 15px;
+}

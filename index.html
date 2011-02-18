@@ -9,40 +9,52 @@
 <meta name="author" content="ozten">
 <link rel="stylesheet" href="css/reset.css">
 <link rel="stylesheet" href="css/stylo.css">
+<link media="screen and (min-width: 768px)" rel="stylesheet" href="css/stylo_768.css">
 </head>
 <body>
+  <!-- Bad Idea Bears: http://mobile-patterns.com/check-in-screens -->
+<!-- div id="splash-page" data-role="page">
+  <h1>Getting Shit Done</h1>
+
+</div -->
 <div id="contexts-page" data-role="page">
     <div data-role="header">
 	<h1>GSD</h1>
     </div><!-- /header -->
     <div data-role="content">
-        <div>
+    <!-- TODO show a tutorial overlay that walks through Contexts and Next Actions -->
+        <div id="contexts-nav">
         <ul id="contexts-list" data-role="listview" data-inset="true" data-theme="c" data-inline="true">
             <li data-role="list-divider" data-theme="b">Contexts</li>
 
-            <li id="ct--1-li"><a href="ct--1-page">@?</a><div class="ui-li-count">0</div></li>
+            <li id="ct--1-li"><a href="#ct--1-page" data-role-id="-1">@?</a><div class="ui-li-count">0</div></li>
         </ul>
-        </div>
         <a href="#" id="export_db" data-role="button" data-inline="true">Export</a>
+        </div><!-- /contexts-nav -->
+        
     </div><!-- /content -->
 
     <div data-role="footer">
-        <h4>Getting Shit Done</h4>
-    </div><!-- /header -->
+        <a rel="external" href="http://gsd/desktop.html">Desktop Site</a>
+        <a href="#settings-page" data-role="button" data-icon="gear" data-xinline="true">Options</a>
+        <a href="#about-page" data-role="button" data-icon="info" data-xinline="true">About</a>
+    </div><!-- /footer -->
 </div>
 <!-- Prototype for all Context Pages -->
 <div id="ct--1-page" data-role="page" 
      data-page-type="context"  data-db-id="-1" data-name="?">
     <div data-role="header" data-inline="false">
 	<h1>GSD</h1>
+        <h2>@Unknown Context</h2>
         <a href="#next-action-editor-page" class="ui-btn-right na-new" 
            data-theme="b" data-rel="dialog">New Action Item</a>
     </div><!-- /header -->
     <div data-role="content">
-        <h1>Action Items</h1>
-        <h2>@Unknown Context</h2>
-        <div class="action-items">
-            <div id="#na-1-div" data-role="collapsible" data-collapsed="false" data-na-id="-1" class="fake-entry next-action">
+
+        <ul class="action-items" data-role="listview" data-inset="true">
+          <li data-role="list-divider">Action Items</li>
+          <li id="#na-1-li" data-na-id="-1" class="fake-entry next-action">
+            <div data-role="collapsible" data-collapsed="false">
               <h3>Fake</h3>
               <p>This is a Fake entry</p>
               <div data-role="controlgroup" data-type="horizontal">
@@ -54,7 +66,8 @@
                    data-theme="e">Delete</a>
               </div>
             </div>
-        </div>
+        </li>
+        </ul>
     </div>
     <div data-role="footer">
         <h4>Getting Shit Done</h4>
@@ -79,8 +92,42 @@
     </div><!-- /header -->
 </div><!-- /page -->
 
+<div id="settings-page" data-role="page">
+  <div data-role="header" data-inline="false">
+	<h1>Options</h1>
+    </div><!-- /header -->
+</div>
+<div id="about-page" data-role="page">
+  <div data-role="header" data-inline="false">
+    <h1>About GSD</h1>
+  </div><!-- /header -->
+  <div data-role="content">
+      <p>I hacked up Getting Shit Done to learn the <a href="">IndededDb</a>
+      APIs. I ended up using <a href="http://jquerymobile.com/">jQuery Mobile</a>
+      UI libraries, to kick the tires and learn about mobile web apps.</p>
+
+      <p><em>In my infinite wisdom</em>, I hadn't realized that no mobile
+        browsers (including our beloved <a href="http://www.mozilla.com/en-US/mobile/">Firefox Mobile Beta</a>) supported IndexedDb, so I also whipped up a sqlite backend.</p>
+
+      <p>I've got some <a href="">other things</a> I'd like to hack on like an Unhosted sync, a more Responsive Design, etc...</p>
+
+      <p>But, better yet, you've got ideas!!! <a href="#">File bugs</a> or <a href="#">write up a wiki pages</a>.</p>
+
+      <p>Hacker? Fork me on <a href="#">Github</a>.</p>
+  </div>
+    
+</div>
+
 <script src="http://code.jquery.com/jquery-1.5.min.js"></script>
-<script>!window.jQuery && document.write(unescape('%3Cscript src="js/libs/jquery-1.5.min.js"%3E%3C/script%3E'))</script>
+<script>!window.jQuery && document.write(unescape('%3Cscript src="js/libs/jquery-1.5.min.js"%3E%3C/script%3E'));
+
+console.log("wiring up mobile init");
+$(document).bind("mobileinit", function(){
+  console.log("mobile init fired");
+  //$.mobile.autoInitialize = false;
+});
+</script>
+
 <script src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"></script>
 <script>!window.jQuery.mobile && document.write(unescape('%3Cscript src="js/libs/jquery.mobile-1.0a3/jquery.mobile-1.0a3.js"%3E%3C/script%3E'));</script>
 
@@ -101,7 +148,9 @@ if (! window.console) {
         }
     };
 }
+
 </script>
+<script src="js/gsd/responsive.js"></script>
 <script src="js/gsd/model.js"></script>
 <script src="js/gsd/db.js"></script>
 <script src="js/gsd/view.js"></script>

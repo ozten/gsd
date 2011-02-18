@@ -1,5 +1,3 @@
-console.info("eval view");
-
 var gsd = gsd ? gsd : {};
 gsd.view = gsd.view ? gsd.view : {};
 
@@ -35,12 +33,14 @@ gsd.view.init = function () {
         // Handle Editor Context Changes
         // TODO edit na change context breaks dialog...
         $('#context-selector').bind('change', function () {
+                /* aok context breakage
             // Everything after @ so @foo -> foo
             var prevC = gsd.currentNextAction.context;
             gsd.currentNextAction.context = $('#context-selector').val();
             console.info("context changed from ", prevC, " to ", gsd.currentNextAction.context);
             gsd.db.updateNextAction(gsd.currentNextAction['id'], gsd.currentNextAction, function () {});
             //TODO with custom event moveNALIContext();
+            */
         });
 }; // end init
 /**
@@ -78,7 +78,12 @@ gsd.view.ensureContextListItem = function (db_id, cli_id, name) {
     var c = $('#ct--1-li').clone();
     var cpage_id = gsd.view.context_dom_page_id(db_id);
     $('a', c).text("@" + name);
-    $('a', c).attr("href", "#" + cpage_id);
+    if (gsd.rspd.isNotSmallLayout()) {
+        $('a', c).attr("href", "#");
+        $('a', c).attr("data-role-id", db_id);
+    } else {
+        $('a', c).attr("href", "#" + cpage_id);
+    }
     $('.ui-li-count', c).text(0);
     c.attr('id', cli_id);//TODO, this needs a better 
     $('#contexts-list').append(c);
@@ -93,12 +98,18 @@ gsd.view.ensureContextPage = function (db_id, contextId, name) {
         page.attr('data-db-id', db_id);//TODO make these numeric
         page.find('h2').text("@" + name);
         page.attr('data-name', name);
-        $('div.next-action', page).remove();
-        $('body').append(page);
+        var parent = $('#ct--1-page').parent();        
+        console.info("page's parent = ", parent);
+        $('.next-action', page).remove();
+        parent.append(page);
     } 
+    if (gsd.rspd.isNotSmallLayout() &&
+        db_id != gsd.cont.currentContext.id) {
+        page.hide();
+    }
     return page;
 }; // end ensureContextPage
-gsd.view.naDOMSelector = '[data-role=collapsible]';
+gsd.view.naDOMSelector = '.next-action';
 
 gsd.view.nextActionIDFromDOM = function (domID) {
         if ('string' == typeof domID && domID.length > 2) {
@@ -111,11 +122,11 @@ gsd.view.nextActionIDFromDOM = function (domID) {
 }; // end nextActionIDFromDOM
 
 gsd.view.ensureNextAction = function (contextDbId, id, nextAction) {
-    console.info("ensureNextAction contextId=", contextDbId, " na id=", id, " nextAction=", nextAction);
-
     var cli_id = gsd.view.context_dom_id(contextDbId),
         cpage_id = gsd.view.context_dom_page_id(contextDbId),
         page = $('#' + cpage_id);
+
+    // page can be a jQuery page or a block in the layout...
 
     console.info('page exists? right? #pages=', page.size(), 'na id=', id, ' cli_id=', cli_id, ' cpage_id=', cpage_id);
 
@@ -123,19 +134,19 @@ gsd.view.ensureNextAction = function (contextDbId, id, nextAction) {
     var count = parseInt($('#' + cli_id + ' .ui-li-count').text()) + 1;
     $('#' + cli_id + ' .ui-li-count').text(count);
 
-    var nextActionDiv = $('#na' + id + "-div"); // TODO nextActionIDFromDOM and write nextActionDOMId(numId)
-    if (nextActionDiv.size() > 1) {
-        console.error("ASSERTION: We have more than 1 nextActionDiv #=", nextActionDiv.size(), " divs=", nextActionDiv);
+    var nextActionLi = $('#na' + id + "-li"); // TODO nextActionIDFromDOM and write nextActionDOMId(numId)
+    if (nextActionLi.size() > 1) {
+        console.error("ASSERTION: We have more than 1 nextActionLi #=", nextActionLi.size(), " divs=", nextActionLi);
     }
-    if (nextActionDiv.size() == 0) {
-            var naDiv = $(gsd.view.naDOMSelector + ':first')
-            var proto = naDiv.clone();
-            if (naDiv.size() != 1) {
-                console.error("ASSERTION: We didn't find a nextActionDiv", naDiv);
+    if (nextActionLi.size() == 0) {
+            var naLi = $(gsd.view.naDOMSelector + ':first')
+            var proto = naLi.clone();
+            if (naLi.size() != 1) {
+                console.error("ASSERTION: We didn't find a nextActionLi", naLi);
             }
             console.info("Cloned the proto", proto);
-            //if (proto.attr('id') == 'na-1-div') { na14-div
-            if (naDiv.hasClass('fake-entry')) {
+
+            if (naLi.hasClass('fake-entry')) {
                 proto.removeClass('fake-entry');
                 // Used to bootstrap UI
                 //kill all the fake entries
@@ -146,7 +157,7 @@ gsd.view.ensureNextAction = function (contextDbId, id, nextAction) {
                 }
                 $(gsd.view.naDOMSelector + '.fake-entry').remove()
             }
-            proto.attr('id', 'na' + id + '-div');
+            proto.attr('id', 'na' + id + '-li');
             proto.attr('data-na-id', id);
             $('h3', proto).text(nextAction.title);
             $('p', proto).html(nextAction.content.replace('\n', "<br />"));
@@ -159,39 +170,40 @@ gsd.view.ensureNextAction = function (contextDbId, id, nextAction) {
             }
             $('.action-items', page).append(proto);
             
-            nextActionDiv = proto;
+            nextActionLi = proto;
     } else {
         console.warn("NA already exists in the DOM");
     }
-    return nextActionDiv;
+    return nextActionLi;
 };
 gsd.view.updateNextAction = function (next_action) {
-    var naDiv = $('#na' + next_action.id + '-div');
-    if (naDiv.size() == 0) {
+    var naLi = $('#na' + next_action.id + '-li');
+    if (naLi.size() == 0) {
         console.warn("No div... creating");
         gsd.view.ensureNextAction(next_action.context, next_action.id, next_action);
-        naDiv = $('#na' + next_action.id + '-div');
-        if (naDiv.size == 0) {
+        naLi = $('#na' + next_action.id + '-li');
+        if (naLi.size == 0) {
             console.error("ASSERTION: We should have created a div");
         }
     }
-    $('h3', naDiv).text(next_action.title);
-    console.info("Updating ", next_action.id, " #divs=", $('h3', naDiv).size(), " with ", next_action.title);
-    $('p', naDiv).html(next_action.content.replace('\n', "<br />"));
+    $('h3', naLi).text(next_action.title);
+    console.info("Updating ", next_action.id, " #li=", $('h3', naLi).size(), " with ", next_action.title);
+    $('p', naLi).html(next_action.content.replace('\n', "<br />"));
     // TODO.. na-new only why do I have to refresh collapsable and buttons
-    /*naDiv.collapsible();
-    $('[data-role=controlgroup]', naDiv).controlgroup();
-    $('[data-role=button]', naDiv).button();
+    /*naLi.collapsible();
+    $('[data-role=controlgroup]', naLi).controlgroup();
+    $('[data-role=button]', naLi).button();
     */
 
-    if (parseInt(naDiv.parents('[data-role=page]').attr('data-db-id')) != next_action.context) {
-        console.warn(parseInt(naDiv.parents('[data-role=page]').attr('data-db-id')),  ' != ',  next_action.context);
-        naDiv.remove();
-        $('#ct-' + next_action.context + '-page .action-items').append(naDiv);
+    /* Switch pages code... 
+    if (parseInt(naLi.parents('[data-role=page]').attr('data-db-id')) != next_action.context) {
+        console.warn(parseInt(naLi.parents('[data-role=page]').attr('data-db-id')),  ' != ',  next_action.context);
+        naLi.remove();
+        $('#ct-' + next_action.context + '-page .action-items').append(naLi);
     } else {
-        console.warn(parseInt(naDiv.parents('[data-role=page]').attr('data-db-id')),  ' == ',  next_action.context);
+        console.warn(parseInt(naLi.parents('[data-role=page]').attr('data-db-id')),  ' == ',  next_action.context);
     }
-
+    */
     // END TODO
 };//end updateNextAction
 gsd.view.setupNextActionEditor = function (id) {
