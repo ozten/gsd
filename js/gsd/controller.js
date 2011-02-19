@@ -73,6 +73,7 @@ gsd.cont.populateUI = function () {
             return false;
         });
         $('.na-edit').live('click', function (e) {
+            console.info("NA EDIT CLICKED");                
             e.preventDefault();
             var id = parseInt($(this).parents('.next-action').attr('data-na-id'));
             $(this).trigger('start-edit-next-action', [id]);

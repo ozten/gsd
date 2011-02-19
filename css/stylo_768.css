@@ -5,3 +5,5 @@
 [data-page-type=context] {
   margin-left: 15px;
 }
+.ui-grid-a .ui-block-a  { width: 320px; }
+.ui-grid-a .ui-block-b { width: -moz-calc( 100% - 335px); }

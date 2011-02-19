@@ -46,27 +46,17 @@
     <div data-role="header" data-inline="false">
 	<h1>GSD</h1>
         <h2>@Unknown Context</h2>
-        <a href="#next-action-editor-page" class="ui-btn-right na-new" 
-           data-theme="b">New Action Item</a>
     </div><!-- /header -->
     <div data-role="content">
-
-        <ul class="action-items" data-role="listview" data-inset="true">
-          <li data-role="list-divider">Action Items</li>
+        <a href="#next-action-editor-page" class="na-new" data-role="button">New Action Item</a>
+        <ul class="action-items" data-role="listview" data-inset="true"
+            data-split-icon="check">
+          <li data-role="list-divider">Action Items </li>
           <li id="#na-1-li" data-na-id="-1" class="fake-entry next-action">
-            <div data-role="collapsible" data-collapsed="false">
-              <h3>Fake</h3>
+              <h3><a href="#next-action-editor-page" class='na-edit'>Fake</a></h3>
               <p>This is a Fake entry</p>
-              <div data-role="controlgroup" data-type="horizontal">
-                <a href="#next-action-editor-page" 
-                   data-role="button" data-inline="true"
-                   data-icon="grid" class='na-edit'>Edit</a>
-                <a href="#" data-role="button" data-icon="delete" 
-                   data-inline="true" class='na-delete'
-                   data-theme="e">Delete</a>
-              </div>
-            </div>
-        </li>
+              <a href="#" class='na-delete'>Mark Complete</a>
+          </li><!-- /#na-1-li -->
         </ul>
     </div>
     <div data-role="footer">

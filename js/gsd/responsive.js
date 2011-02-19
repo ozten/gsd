@@ -10,6 +10,7 @@ gsd.rspd.init = function () {
         //- remove some data-role=page, reconfigure UI
         console.info("I'm a MEDIUM layout");
         var ct_page = $("#ct--1-page").remove();
+        
         ct_page.removeAttr('data-role') // not a page
                .removeAttr('data-url'); // no need to go there
 
@@ -20,6 +21,18 @@ gsd.rspd.init = function () {
         $('#contexts-page [data-role=content]').addClass('ui-grid-a');
         $('#contexts-nav').addClass('ui-block-a');
         ct_page.addClass('ui-block-b');
+
+        if (1 != $('.na-new').size()) {
+            console.error("ASSERTION: We wanted to grab the one New Next Action button");
+        } 
+
+        var newNa = $('.na-new').remove();
+        newNa.attr('data-inset', 'true');
+        newNa.attr('data-theme', 'b');
+        newNa.addClass('ui-btn-right');
+
+        $('#contexts-page [data-role=header]').append(newNa);
+
         gsd.rspd.contextsNav();
     } else {
         console.info("HELP I DON'T KNOW my layout");

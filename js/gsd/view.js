@@ -18,9 +18,11 @@ gsd.view.init = function () {
             return true;
         });
         $('.na-edit').live('start-edit-next-action', function (event, id) {
+            console.info("NA START EDIT EVENTED ");
             gsd.view.setupNextActionEditor(id);
         });
         $('.na-delete').live('click', function (event) {
+            console.info("NA DELETE CLICKED");
             var na = $(this).parents('.next-action'),
                 id = parseInt(na.attr('data-na-id'));
             event.preventDefault();
@@ -159,8 +161,8 @@ gsd.view.ensureNextAction = function (contextDbId, id, nextAction) {
             }
             proto.attr('id', 'na' + id + '-li');
             proto.attr('data-na-id', id);
-            $('h3', proto).text(nextAction.title);
-            $('p', proto).html(nextAction.content.replace('\n', "<br />"));
+
+            gsd.view.populate(proto, nextAction);
             if (page.size() != 1) {
                 console.error("ASSERTION: We didn't have 1 page #pages", page.size(), " page=", page);
             }
@@ -176,6 +178,14 @@ gsd.view.ensureNextAction = function (contextDbId, id, nextAction) {
     }
     return nextActionLi;
 };
+/**
+ * domEl is a jQuery wrapped li
+ */
+gsd.view.populate = function (domEl, nextAction) {
+    $('h3 a', domEl).text(nextAction.title);
+    var ptext = nextAction.content.split('\n').splice(1).join("<br />");
+    $('p', domEl).html(ptext);
+}
 gsd.view.updateNextAction = function (next_action) {
     var naLi = $('#na' + next_action.id + '-li');
     if (naLi.size() == 0) {
@@ -186,9 +196,7 @@ gsd.view.updateNextAction = function (next_action) {
             console.error("ASSERTION: We should have created a div");
         }
     }
-    $('h3', naLi).text(next_action.title);
-    console.info("Updating ", next_action.id, " #li=", $('h3', naLi).size(), " with ", next_action.title);
-    $('p', naLi).html(next_action.content.replace('\n', "<br />"));
+    gsd.view.populate(naLi, next_action);
     // TODO.. na-new only why do I have to refresh collapsable and buttons
     /*naLi.collapsible();
     $('[data-role=controlgroup]', naLi).controlgroup();
