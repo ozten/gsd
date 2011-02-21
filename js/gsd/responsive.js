@@ -55,6 +55,14 @@ gsd.rspd.contextsNav = function () {
                 id: parseInt(page.attr('data-db-id'), 10),
                 name: page.attr('data-name')
             };
+
+            
+            // Highlight active context
+            $('#contexts-list > li.active-context').removeClass('active-context');
+            $(this).parents('li').addClass('active-context');
+            //$('#contexts-list li[data-theme=e]').attr('data-theme', 'c');
+            //$(this).parents('li').attr('data-theme', 'e');
+
             return false;
         });
 };

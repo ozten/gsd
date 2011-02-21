@@ -221,7 +221,8 @@ gsd.view.setupNextActionEditor = function (id) {
             console.info("editor fresh read is na id=", na.id, " context=", na.context);
             var editor = $('#next-action-editor-page');
             $('.next-action-title', editor).text(na.title);
-            $('textarea', editor).val(na.content);
+            $('textarea', editor).val(na.content)
+                .focus();
             //var select = $('select option[value=' + na.context + ']', editor);
             //Do we ever populate this correctly?
             $('#context-selector').val(na.context);
