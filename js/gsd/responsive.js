@@ -45,13 +45,16 @@ gsd.rspd.isNotSmallLayout = function () {
     return ! $.mobile.media("(max-width: 480px)");
 }
 gsd.rspd.contextsNav = function () {
-    console.info("XXXXXXXXXXXXXXXXXXXXXXXXXXXX", $('#contexts-list li a'));
     $('#contexts-list li a').attr('href', '#')
         .live('click', function (e) {
             e.preventDefault();
-            console.info("XXXXXXXXXXXXXXXXXXXXXXXXXXXX", $(this).attr('data-role-id'));
             $('[data-page-type=context]').hide();
             $('#ct-' + $(this).attr('data-role-id') + '-page').show();
+            var page = $('[data-db-id=' + $(this).attr('data-role-id') + ']');
+            gsd.cont.currentContext = {
+                id: parseInt(page.attr('data-db-id'), 10),
+                name: page.attr('data-name')
+            };
             return false;
         });
 };
