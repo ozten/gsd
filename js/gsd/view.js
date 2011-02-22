@@ -178,6 +178,16 @@ gsd.view.ensureNextAction = function (contextDbId, id, nextAction) {
     }
     return nextActionLi;
 };
+/* TODO stopped here.
+gsd.view.updateContextNACount = function () {
+    $('#contexts-list li.ui-btn').each(function (i, el) {
+            var ctx_id = $(el).attr(
+        });
+
+    var count = parseInt($('#' + cli_id + ' .ui-li-count').text()) + 1;
+    $('#' + cli_id + ' .ui-li-count').text(count);
+};
+*/
 /**
  * domEl is a jQuery wrapped li
  */
@@ -197,22 +207,11 @@ gsd.view.updateNextAction = function (next_action) {
         }
     }
     gsd.view.populate(naLi, next_action);
-    // TODO.. na-new only why do I have to refresh collapsable and buttons
-    /*naLi.collapsible();
-    $('[data-role=controlgroup]', naLi).controlgroup();
-    $('[data-role=button]', naLi).button();
-    */
 
-    /* Switch pages code... 
-    if (parseInt(naLi.parents('[data-role=page]').attr('data-db-id')) != next_action.context) {
-        console.warn(parseInt(naLi.parents('[data-role=page]').attr('data-db-id')),  ' != ',  next_action.context);
-        naLi.remove();
-        $('#ct-' + next_action.context + '-page .action-items').append(naLi);
-    } else {
-        console.warn(parseInt(naLi.parents('[data-role=page]').attr('data-db-id')),  ' == ',  next_action.context);
+    if (parseInt(naLi.parents('[data-page-type=context]').attr('data-db-id')) != next_action.context) {
+        $('#ct-' + next_action.context + '-page .action-items').append(naLi.remove());
+        gsd.view.updateContextNACount();
     }
-    */
-    // END TODO
 };//end updateNextAction
 gsd.view.setupNextActionEditor = function (id) {
     console.info('setupNextActionEditor id=', id);
