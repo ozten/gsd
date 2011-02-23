@@ -40,6 +40,11 @@ gsd.rspd.init = function () {
     // else if max-width < 1025
     // Large layout (future, TBD)
 
+    // Touch?
+    if (window.ontouchstart) { 
+        $('html').addClass('touch-enabled');
+    }
+
 };
 gsd.rspd.isNotSmallLayout = function () {
     return ! $.mobile.media("(max-width: 480px)");
@@ -49,6 +54,7 @@ gsd.rspd.contextsNav = function () {
         .live('click', function (e) {
             e.preventDefault();
             $('[data-page-type=context]').hide();
+            console.info("Showing ", '#ct-' + $(this).attr('data-role-id') + '-page');
             $('#ct-' + $(this).attr('data-role-id') + '-page').show();
             var page = $('[data-db-id=' + $(this).attr('data-role-id') + ']');
             gsd.cont.currentContext = {

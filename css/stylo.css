@@ -1,0 +1,5 @@
+
+@media -moz-touch-enabled {
+    #export_db { display: none; }
+}
+html.touch-enabled #export_db { display: none; }
