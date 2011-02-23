@@ -29,6 +29,7 @@ gsd.view.init = function () {
             gsd.db.deleteNextAction(id, function () {
                 na.remove();
                 // TODO $(document).trigger('na-delete');
+                gsd.view.updateContextNACount();
                 return false;
             });
         });
@@ -73,7 +74,7 @@ gsd.view.context_dom_page_id = function (db_id) {
  *
  */
 gsd.view.ensureContextListItem = function (db_id, cli_id, name) {
-    console.info("ensureContextLI ", cli_id, " ", name);
+    console.info("ensureContextLI db=", db_id, "cli_id=", cli_id, " ", name);
     var cli = $('#' + cli_id);
     if (1 == cli.size()) return;
     
@@ -178,16 +179,21 @@ gsd.view.ensureNextAction = function (contextDbId, id, nextAction) {
     }
     return nextActionLi;
 };
-/* TODO stopped here.
+
 gsd.view.updateContextNACount = function () {
     $('#contexts-list li.ui-btn').each(function (i, el) {
-            var ctx_id = $(el).attr(
+            console.info(i, el);
+            var ctx_id = parseInt($(el).find('a').attr('data-role-id'), 10);
+            console.info("Dealking with ", ctx_id);
+            console.info($('#ct-' + ctx_id + '-page .next-action').size());
+                $('#ct-' + ctx_id + '-li .ui-li-count').text(
+                    $('#ct-' + ctx_id + '-page .next-action').size());
         });
 
-    var count = parseInt($('#' + cli_id + ' .ui-li-count').text()) + 1;
-    $('#' + cli_id + ' .ui-li-count').text(count);
+    //    var count = parseInt($('#' + ctx_id + ' .ui-li-count').text()) + 1;
+    //    $('#' + ctx_id + ' .ui-li-count').text(count);
 };
-*/
+
 /**
  * domEl is a jQuery wrapped li
  */
