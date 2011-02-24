@@ -17,6 +17,16 @@ gsd.view.init = function () {
 
             return true;
         });
+        $('.na-another-new').live('click', function (event) {
+            event.preventDefault();
+            // Prep data for editor
+            gsd.db.createNextAction(function (next_action) {
+                gsd.currentNextAction = next_action;                
+                gsd.view.setupNextActionEditor(next_action.id);
+            });// end createNextAction callback
+
+            return false;
+        });
         $('.na-edit').live('start-edit-next-action', function (event, id) {
             console.info("NA START EDIT EVENTED ");
             gsd.view.setupNextActionEditor(id);

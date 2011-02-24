@@ -73,19 +73,22 @@
 <div id="next-action-editor-page" data-role="page">
     <div data-role="header" data-inline="false">
 	<h1>Edit <span class="next-action-title"></span></h1>
+        <a href="#" class="na-another-new ui-btn-right" data-role="button">Save and Add Another</a>
     </div><!-- /header -->
   <div data-role="content">
-    <form>
+    <form action="#">
+      <fieldset data-role="fieldcontain">
       <label for="context-selector">Context:</label>
       <select id="context-selector">
         <option value="-1" selected>@?</option>
         <option value="new">New Context...</option>
       </select>
+      </fieldset>
       <div id="display" class="loading"><textarea></textarea></div>
     </form>
   </div>
     <div data-role="footer">
-        <a href="#" data-rel="back">Done</a>
+        <a href="#about-page" data-role="button" data-icon="info" data-xinline="true">About</a>
     </div><!-- /header -->
 </div><!-- /page -->
 
