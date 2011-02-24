@@ -12,14 +12,17 @@ gsd.db.indx.dbDescription = "All your ideas are belong to us.";
 gsd.db.indx.objectStoreName = "ideas";
 gsd.db.indx.contextOSName = "contexts";
 gsd.db.indx.handleError = function(event) {
-        // Do something with request.errorCode!
+    if (window.console && window.console.info) {
         console.info("ERROR handler");
         console.info("ERROR: #", event.target.errorCode);
+    }
 };
-
 
 gsd.db.indx.setupDb = function (completeFn) {
         var req = window.indexedDB.open(gsd.db.indx.dbName, gsd.db.indx.dbDescription),
+        /* I took a stab at a DB Migrations coding pattern.
+           You just keep adding functions to this list.
+        */
             migrations = [
                 0, 
                 function (req) {
@@ -56,6 +59,7 @@ gsd.db.indx.setupDb = function (completeFn) {
                     };
                 },/* end migration 3 */
             ],
+        /* The migration runner */
             migrate = function (event) {
                 // .source IDBFactory, .result IDBDatabase, req.LOADING, req.DONE, req.readyState
                 dbVersion = parseInt(req.result.version);
@@ -68,7 +72,7 @@ gsd.db.indx.setupDb = function (completeFn) {
                     setVerReq.onerror = gsd.db.indx.handleError;
                     
                 } else {
-                    console.info("Finished with migrations, continuing");
+                    //console.info("Finished with migrations, continuing");
                     completeFn();
                 }
             },
@@ -92,18 +96,14 @@ gsd.db.indx.writeData = function (db) {
         gsd.currentNextAction = gsd.model.initialNextActions[i];
         addReq = objectStore.add(gsd.model.initialNextActions[i]);
         addReq.onsuccess = function (event) {
-            // event.target.result == gsd.db.indx.initialNextActions[i].ssn
-            //console.info("Done writing ", event.target.result);
             gsd.currentNextAction = event.target.result;
         };
     }
 }; //end function writeData 
 
-
 gsd.db.indx.createNextAction = function (successFn) {
         var next_action = {title: '', content: '', 
                            context: gsd.cont.currentContext.id};
-        console.info("Creating new na with context.id=", gsd.cont.currentContext.id);
         var openReq = window.indexedDB.open(gsd.db.indx.dbName, gsd.db.indx.dbDescription);
         openReq.onerror = gsd.db.indx.handleError;
         openReq.onsuccess = function (event) {

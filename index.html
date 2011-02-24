@@ -99,31 +99,51 @@
     <h1>About GSD</h1>
   </div><!-- /header -->
   <div data-role="content">
-      <p>I hacked up Getting Shit Done to learn the <a href="">IndededDb</a>
-      APIs. I ended up using <a href="http://jquerymobile.com/">jQuery Mobile</a>
-      UI libraries, to kick the tires and learn about mobile web apps.</p>
+    <div id="gsd-logo">
+    <img src="/i/logo_50x106.png" height="50" width="106" />
+    <div id="gsd-punchline">Getting Shit Done!</div>
+    </div>
+    <h2>GTD</h2>
+    <p><a title="Kindle Edition of Getting Things Done" href="http://www.amazon.com/gp/product/B000WH7PKY?ie=UTF8&tag=ozten-20&linkCode=as2&camp=1789&creative=390957&creativeASIN=B000WH7PKY"><img id="gtd-book" border="0" src="http://ecx.images-amazon.com/images/I/51xhKBKxmQL._SL110_.jpg"></a><img src="http://www.assoc-amazon.com/e/ir?t=ozten-20&l=as2&o=1&a=B000WH7PKY" width="1" height="1" border="0" alt="" style="border:none !important; margin:0px !important;" 
+      />Getting Things Done is a productivity method made famous in 
+      <a href="http://www.amazon.com/gp/product/B000WH7PKY?ie=UTF8&tag=ozten-20&linkCode=as2&camp=1789&creative=390957&creativeASIN=B000WH7PKY">David Allen's book</a>. Over the years, I've tailored this down to my own flow. I noticed I was abusing <a href="http://evernote.com">Evernote</a> and other notebooks by mixing in my <strong>&quot;Next Action&quot;</strong> lists with Project materials and reference materials. Enter...</p>
+      <h2>GSD</h2>
+      <p>This simple web application gives you <em>Contexts</em> and <em>Next Action</em> lists. 
+        Use them for good <em>and not for evil</em>. A Context is a place,
+        tool, or person that you need to get a job done. A Next Action is a 
+        short note about a concerte step you need to take. Confused? <span id="gtd-rtfm">Read the book.</span></p>
+
+      <p>A simple example: I want to see my Shopping list when I'm at the Grocery store, so under the Grocery context, I create:</p>
+        <ul>
+          <li>Buy Field Roast</li>
+          <li>Buy Swiss Cheese</li>
+          <li>Buy Rye Bread</li>
+        </ul>
+
+      <p>This app is usable on a Desktop Computer, Mobile Phone, or Tablet's web browser. On Apple mobile devices, just bookmark the <a href="http://getting.shitdone.org/">Homepage</a> and add to your <strong>home screen</strong>. You'll get the shiny launch icon, etc.</p>
+      <h3>Privacy</h3>
+      <p> All your data is stored on your local device. There is no login. Think of it as sticky notes on your monitor.</p>
+
+      <h2>Technical bits</h2>
+      <h3>Why&quest;</h3>
+      <p>I hacked on Getting Shit Done, so I could learn the Firefox 4 
+        <a href="">IndexededDb</a> APIs, <a href="http://www.alistapart.com/articles/responsive-web-design/">Responsive</a> and <a href="http://www.lukew.com/ff/entry.asp?933">Mobile First Design</a> methods, and to exercise my UX / Design skillz. I ended up using <a href="http://jquerymobile.com/">jQuery Mobile</a>
+      UI libraries, to kick the tires on this new UI toolkit.</p>
 
       <p><em>In my infinite wisdom</em>, I hadn't realized that no mobile
-        browsers (including our beloved <a href="http://www.mozilla.com/en-US/mobile/">Firefox Mobile Beta</a>) supported IndexedDb, so I also whipped up a sqlite backend.</p>
+        browsers (including our beloved <a href="http://www.mozilla.com/en-US/mobile/">Firefox Mobile Beta</a>) supported IndexedDb, so I also whipped up a sqlite backend. Currently I don't have code for Chrome's IndexedDb, but the webkit API is slightly different and the spec is in flux, so &hellip; low priority.</p>
 
-      <p>I've got some <a href="">other things</a> I'd like to hack on like an Unhosted sync, a more Responsive Design, etc...</p>
+      <h3>Your ideas</h3>
+      <p>You can run this app off the index.html file on <a href="http://getting.shitdone.org">Getting.ShitDone.org</a> or grab the files and run it on your own website. Hack on it! Add features! Fork me on <a href="http://github.com/ozten/gsd/">Github</a>.</p>
 
-      <p>But, better yet, you've got ideas!!! <a href="#">File bugs</a> or <a href="#">write up a wiki pages</a>.</p>
+      <p>I've got some <a href="http://github.com/ozten/gsd/roadmap">other things</a> I'd like to hack on like an <a href="http://unhosted.org">Unhosted</a> sync, Offline app caching, etc...</p>
 
-      <p>Hacker? Fork me on <a href="#">Github</a>.</p>
-  </div>
-    
+      <p>But, better yet, you've got ideas!!! <a href="http://github.com/ozten/gsd/issues">File bugs</a> or <a href="#">write up a wiki pages</a>.</p>
+  </div>    
 </div>
 
 <script src="http://code.jquery.com/jquery-1.5.min.js"></script>
-<script>!window.jQuery && document.write(unescape('%3Cscript src="js/libs/jquery-1.5.min.js"%3E%3C/script%3E'));
-
-console.log("wiring up mobile init");
-$(document).bind("mobileinit", function(){
-  console.log("mobile init fired");
-  //$.mobile.autoInitialize = false;
-});
-</script>
+<script>!window.jQuery && document.write(unescape('%3Cscript src="js/libs/jquery-1.5.min.js"%3E%3C/script%3E'));</script>
 
 <script src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"></script>
 <script>!window.jQuery.mobile && document.write(unescape('%3Cscript src="js/libs/jquery.mobile-1.0a3/jquery.mobile-1.0a3.js"%3E%3C/script%3E'));</script>
@@ -145,7 +165,6 @@ if (! window.console) {
         }
     };
 }
-
 </script>
 <script src="js/gsd/responsive.js"></script>
 <script src="js/gsd/model.js"></script>
@@ -156,6 +175,7 @@ if (! window.console) {
 
 <script src="js/main.js"></script>
 <script type="text/javascript">
+  // Curious to see if anyone is using the hosted copy...
   var _gaq = _gaq || [];
   _gaq.push(['_setAccount', 'UA-16311800-2']);
   _gaq.push(['_trackPageview']);
@@ -165,7 +185,6 @@ if (! window.console) {
     ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
   })();
-
 </script>
 </body>
 </html>

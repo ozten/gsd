@@ -33,6 +33,8 @@ gsd.rspd.init = function () {
 
         $('#contexts-page [data-role=header]').append(newNa);
 
+        $('#gtd-book').attr('src', 'http://ecx.images-amazon.com/images/I/51xhKBKxmQL._SL160_.jpg');
+
         gsd.rspd.contextsNav();
     } else {
         console.info("HELP I DON'T KNOW my layout");

@@ -3,3 +3,27 @@
     #export_db { display: none; }
 }
 html.touch-enabled #export_db { display: none; }
+
+div#about-page.ui-page .ui-content {
+    margin: 1em;
+
+}
+#gsd-logo { text-align: center; }
+#gsd-punchline { font-weight: bold; }
+#about-page p {
+    line-height: 1.5;
+    margin-bottom: 1em;
+}
+#about-page ul {
+    margin-left: 2em;
+    margin-bottom: 1em;
+}
+#gtd-book { 
+    float: right; 
+    padding-left: 0.3em;
+    padding-bottom: 0.3em;
+}
+
+#about-page h2, #about-page h3 {
+    clear: right;
+}
