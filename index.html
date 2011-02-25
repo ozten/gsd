@@ -116,18 +116,24 @@
         tool, or person that you need to get a job done. A Next Action is a 
         short note about a concerte step you need to take. Confused? <span id="gtd-rtfm">Read the book.</span></p>
 
-      <p>A simple example: I want to see my Shopping list when I'm at the Grocery store, so under the Grocery context, I create:</p>
-        <ul>
-          <li>Buy Field Roast</li>
-          <li>Buy Swiss Cheese</li>
-          <li>Buy Rye Bread</li>
-        </ul>
-
-      <p>This app is usable on a Desktop Computer, Mobile Phone, or Tablet's web browser. On Apple mobile devices, just bookmark the <a href="http://getting.shitdone.org/">Homepage</a> and add to your <strong>home screen</strong>. You'll get the shiny launch icon, etc.</p>
-      <h3>Privacy</h3>
-      <p> All your data is stored on your local device. There is no login. Think of it as sticky notes on your monitor.</p>
-
-      <h2>Technical bits</h2>
+      <div id="usage-example">
+        <p><strong>A simple example:</strong> I want to see my Shopping list when I'm at the Grocery store, so under the <em>Grocery context</em>, I create:</p>
+          <ul>
+            <li>Buy Field Roast</li>
+            <li>Buy Swiss Cheese</li>
+            <li>Buy Rye Bread</li>
+          </ul>
+        </div>
+      <div id="usage-devices">
+        <p>And that's it. Simple, no?</p>
+        <p>This app is usable on a Desktop Computer, Mobile Phone, or Tablet's web browser. On Apple mobile devices, just bookmark the <a href="http://getting.shitdone.org/">Homepage</a> and add to your <strong>home screen</strong>. You'll get the shiny launch icon, etc.</p>
+      </div>
+      <div id="gsd-privacy">
+        <h3 id="usage-privacy">Privacy</h3>
+        <p> All your data is stored on your local device. There is no login. Think of it as sticky notes on your monitor.</p>
+      </div>
+      <h2>Technical bits</h2>      
+      <div id="why">
       <h3>Why&quest;</h3>
       <p>I hacked on Getting Shit Done, so I could learn the Firefox 4 
         <a href="">IndexededDb</a> APIs, <a href="http://www.alistapart.com/articles/responsive-web-design/">Responsive</a> and <a href="http://www.lukew.com/ff/entry.asp?933">Mobile First Design</a> methods, and to exercise my UX / Design skillz. I ended up using <a href="http://jquerymobile.com/">jQuery Mobile</a>
@@ -135,13 +141,15 @@
 
       <p><em>In my infinite wisdom</em>, I hadn't realized that no mobile
         browsers (including our beloved <a href="http://www.mozilla.com/en-US/mobile/">Firefox Mobile Beta</a>) supported IndexedDb, so I also whipped up a sqlite backend. Currently I don't have code for Chrome's IndexedDb, but the webkit API is slightly different and the spec is in flux, so &hellip; low priority.</p>
-
+      </div> <!-- /why -->
+      <div id="collaborate">
       <h3>Your ideas</h3>
       <p>You can run this app off the index.html file on <a href="http://getting.shitdone.org">Getting.ShitDone.org</a> or grab the files and run it on your own website. Hack on it! Add features! Fork me on <a href="http://github.com/ozten/gsd/">Github</a>.</p>
 
       <p>I've got some <a href="http://github.com/ozten/gsd/roadmap">other things</a> I'd like to hack on like an <a href="http://unhosted.org">Unhosted</a> sync, Offline app caching, etc...</p>
 
       <p>But, better yet, you've got ideas!!! <a href="http://github.com/ozten/gsd/issues">File bugs</a> or <a href="#">write up a wiki pages</a>.</p>
+      </div><!-- /collaborate -->
   </div>    
 </div>
 
