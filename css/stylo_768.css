@@ -12,15 +12,84 @@ li.active-context.ui-btn {
     box-shadow: inset 0px 0px 0.3em 0.1em rgba(82, 143, 188, 0.5);
 }
 
+#about-page  {
+background-image: -webkit-gradient(
+    linear,
+    left bottom,
+    left top,
+    color-stop(0.27, rgb(173,173,173)),
+    color-stop(0.64, rgb(219,219,219))
+);
+background-image: -moz-linear-gradient(
+    center bottom,
+    rgb(200,200,200) 27%,
+    rgb(240,240,240) 64%
+);
+}
+#about-page [data-role=content] {
+    padding: auto 0px;
+}
+#about-page #gsd-logo {
+    text-align: center;
+    margin-bottom: 15px;
+    vertical-align: text-bottom;
+}
+#about-page #gsd-logo img {}
+#about-page #gsd-logo div { 
+    color: #3081BC;
+    display: inline-block;
+    font-style: italic;
+    text-shadow: 1px 1px 3px #666; font-size: 3em;
+}
+#about-page #usage {
+    width: 58%;
+    float: left;
+    clear: left;
+    background-color: rgba(255, 255, 255, 0.3);
+    padding: 30px;
+}
+    #about-page #gtd-book { margin-left: 5px; }
+#about-page #hackers {
+    background-color: rgba(0, 0, 0, 0.65);
+
+    float: left;
+
+    margin-left: 15px;
+    padding: 15px;
+    -moz-border-radius: 12px;
+
+    position: relative;
+    z-index: 1;
+    width: -moz-calc(100% - 58% - 115px); /* 100% = us + 58% + 15px + 15px*/
+}
+#about-page #hackers h2, #about-page #hackers h3 {
+    font-size: 1.5em;
+    padding-bottom: 5px;
+}
+#about-page #hackers p {
+    font-family: ‘Courier New’, Courier, monospace;
+    font-weight: bold;
+    line-height: 1.1;
+}
+#about-page #hackers, #about-page #hackers a {
+    color: rgba(162, 215, 145, 0.8);
+    text-shadow: none;
+}
+#about-page #hackers a {
+    color: rgba(162, 215, 145, 0.95);
+}
+#gsd-privacy p {
+    clear: left;
+    padding-left: 81px;
+    background: url(/i/privacy_50x32.png) no-repeat 20px 5px;
+    min-height: 50px;
+}
+/*
 #about-page h2, #about-page h3 {
     clear: none;
 }
 #gtd-rtfm { font-weight: 900; }
-#gsd-privacy {
-    clear: left;
-    padding-left: 81px;
-    background: url(/i/privacy_50x32.png) no-repeat 20px 5px;
-}
+
 #why {
     float: left;
     width: 50%;
@@ -66,3 +135,13 @@ li.active-context.ui-btn {
     #about-page #usage-privacy {
         clear: left;
     }
+*/
+
+.continuous {
+    text-shadow: 1px 1px #000;
+    white-space: nowrap;
+}
+
+abbr[title], acronym[title] {
+    border-bottom-width: 0;
+}

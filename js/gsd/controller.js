@@ -1,4 +1,3 @@
-console.info("eval controller");
 var gsd = gsd ? gsd : {};
 gsd.cont = gsd.cont ? gsd.cont : {};
 
@@ -9,21 +8,17 @@ gsd.cont.populateUI = function () {
             function (key, value) {
                 //JQM
                 ctxId = parseInt(value.context);
-                console.info("Loading na id=", value.id, " title=", value.title, " context=", value.context, " ctxId=", ctxId, " nextaction=", value);
                 var contextLoaded = function (context) {
                     var cli_id = gsd.view.context_dom_id(context.id),
                         cpage_id = gsd.view.context_dom_page_id(context.id);
 
                     gsd.view.ensureContextListItem(value.id, cli_id, context.name);
-                    console.info("Must ", value.id, "na ct li=", $('#' + cli_id), " ctx name=", context.name);
                     gsd.view.ensureContextPage(context.id, cpage_id, context.name);
-                    console.info("Must ", value.id, "na ct page=", $('#' + cpage_id));
                     gsd.view.ensureNextAction(context.id, key, value);
                 };
                 if (ctxId > 0) {
                     gsd.db.getContextById(ctxId, contextLoaded);
                 } else {
-                    console.info("Skipping ", value.context, ctxId);
                     ctxId = -1;
                     contextLoaded({id: -1, name: '?'});
                 }                               
@@ -40,47 +35,50 @@ gsd.cont.populateUI = function () {
                 var cli_id = gsd.view.context_dom_id(key);
                 gsd.view.ensureContextListItem(key, cli_id, value.name);
                 var cpage_id = gsd.view.context_dom_page_id(key);
-                console.info("cpage_id ", cpage_id);
                 gsd.view.ensureContextPage(value.id, cpage_id, value.name);
                 return true;
             }, 
             function () {
                 //console.info("Done loading contexts");
         });
-        $(document).bind('pagebeforeshow', function (e) {
-                //console.info("pagebeforeshow", this);
-        });
+        /* $(document).bind('pagebeforeshow', function (e) {
+                console.info("pagebeforeshow", this);
+                });        
         $(document).bind('pageshow', function (e, ui) {
-                //console.info("pageshow", ui.prevPage);
-                //console.info(ui.prevPage.attr('id'));
+                console.info("pageshow", ui.prevPage);
+                console.info(ui.prevPage.attr('id'));
             if ('contexts-page' == ui.prevPage.attr('id')) {
-                //console.info("New page is ", this);
+                console.info("New page is ", this);
             }
         });
         $(document).bind('pagebeforehide', function (e) {
-                //console.info("pagebeforehide");
+                console.info("pagebeforehide");
         });
+        */
         $(document).bind('pagehide', function (e, ui) {
             if ('context' == ui.nextPage.attr('data-page-type')) {
                 gsd.cont.currentContext = {
                     id: ui.nextPage.attr('data-db-id'), //TODO make numeric
                     name: ui.nextPage.attr('data-name')
                 }
-            }            
+            } else if ('about-page' == ui.nextPage.attr('id')) {
+                if ($.mobile.media("(min-width: 768px)")) {
+                    $('#github-ribbon').attr('style', '');
+                }
+                $('#gtd-book').attr('src', 'http://ecx.images-amazon.com/images/I/51xhKBKxmQL._SL160_.jpg');
+            }
         });
         $('#export_db').bind('click', function (event) {
             gsd.cont.exportDatabase();
             return false;
         });
         $('.na-edit').live('click', function (e) {
-            console.info("NA EDIT CLICKED");                
             e.preventDefault();
             var id = parseInt($(this).parents('.next-action').attr('data-na-id'));
             $(this).trigger('start-edit-next-action', [id]);
             return false;
         });
         $('#display textarea').bind('change, keyup', function (event) {
-                //console.info("Make that change");
             gsd.cont.saveCurrent();
         });
         //$.mobile.changePage('#contexts-page');
@@ -101,7 +99,6 @@ gsd.cont.saveCurrent = function () {
 
                 gsd.cont.timeoutId = null;
 
-                console.info("gsd.currentNextAction.context=", gsd.currentNextAction.context);
                 //gsd.view.ensureNextAction(gsd.currentNextAction.context, gsd.currentNextAction.id, gsd.currentNextAction);
                 gsd.view.updateNextAction(gsd.currentNextAction);
                 // Use custom events to decouple

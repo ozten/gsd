@@ -1,6 +1,5 @@
 /*jslint browser: true, plusplus: false, newcap: false, onevar: false  */
 /*global window: false, require: false, $: false, Processing: false, console: false */
-console.info("eval indexedb.js");
 var gsd = gsd ? gsd : {};
 
 gsd.db = gsd.db ? gsd.db : {};
@@ -130,7 +129,6 @@ gsd.db.indx.createNextAction = function (successFn) {
         return next_action;
 }; // end createNextAction
 gsd.db.indx.getNextAction = function (id, fn) {
-    console.info('getNextAction domid=', id);
     //var id = gsd.view.nextActionIDFromDOM(id);
         var openReq = window.indexedDB.open(gsd.db.indx.dbName, gsd.db.indx.dbDescription);
         openReq.onerror = gsd.db.indx.handleError;
@@ -147,10 +145,8 @@ gsd.db.indx.getNextAction = function (id, fn) {
 }; //end function getNextAction
 
 gsd.db.indx.updateNextAction = function (id, next_action, successFn) {
-    console.info('updateNextAction domid=', id, 'na id=', next_action.id, ' context=', next_action.context);
     //var id = gsd.view.nextActionIDFromDOM(domID);
         var openReq = window.indexedDB.open(gsd.db.indx.dbName, gsd.db.indx.dbDescription);
-        console.info('updateNextAction derived id=', id);
 
         openReq.onerror = gsd.db.indx.handleError;
         openReq.onsuccess = function (event) {
@@ -160,7 +156,7 @@ gsd.db.indx.updateNextAction = function (id, next_action, successFn) {
             transaction.onerror = gsd.db.indx.handleError;
             // Do something when all the data is added to the database.
             transaction.oncomplete = function(event) {
-                console.info("Update ", id, " complete");
+                // could stop a progress bar here...
             };
 
             var objectStore = transaction.objectStore(gsd.db.indx.objectStoreName);
@@ -174,10 +170,8 @@ gsd.db.indx.updateNextAction = function (id, next_action, successFn) {
         };
 }; //end updateNextAction
 gsd.db.indx.deleteNextAction = function (id, successFn) {
-        console.info('deleteNextAction domid=', id);
         //var id = gsd.view.nextActionIDFromDOM(domID);
         var openReq = window.indexedDB.open(gsd.db.indx.dbName, gsd.db.indx.dbDescription);
-        console.info('deleteNextAction derived id=', id);
         openReq.onerror = gsd.db.indx.handleError;
         openReq.onsuccess = function (event) {
             var db = openReq.result;
@@ -186,7 +180,7 @@ gsd.db.indx.deleteNextAction = function (id, successFn) {
             transaction.onerror = gsd.db.indx.handleError;
             // Do something when all the data is added to the database.
             transaction.oncomplete = function(event) {
-                //console.info("Delete ", id, " complete");
+                //Good time to udpate the UI
             };
 
             var objectStore = transaction.objectStore(gsd.db.indx.objectStoreName);
@@ -249,7 +243,6 @@ gsd.db.indx.getAllNextActions = function (loadFn, finFn) {
 
 
 gsd.db.indx.getContextById = function (id, loadFn) {
-    console.info("getContextById ", id);
     var openReq = window.indexedDB.open(gsd.db.indx.dbName, gsd.db.indx.dbDescription);
      openReq.onerror = gsd.db.indx.handleError;
      openReq.onsuccess = function (event) {
@@ -258,15 +251,13 @@ gsd.db.indx.getContextById = function (id, loadFn) {
          var objectStore = trans.objectStore(gsd.db.indx.contextOSName);
          var getReq = objectStore.get(id);
          getReq.onerror = function () {
-                 console.error("Couldn't GET ", id);
+             //console.error("Couldn't GET ", id);
          };
          trans.oncomplete = function () {
-             console.info("Complete GET ", id);
+             //console.info("Complete GET ", id);
          };
          getReq.onsuccess = function (cursorEvent) {
-             console.info("Get success ", id, " ", cursorEvent.target);
              var context = cursorEvent.target.result;
-             console.info("context", context);
              loadFn(context);
          };
      };

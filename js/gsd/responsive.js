@@ -4,11 +4,10 @@ gsd.rspd = gsd.view ? gsd.view : {};
 gsd.rspd.init = function () {
     if ($.mobile.media("(max-width: 480px)")) {
         // Small layout - as sent to the client
-        console.info("I'm a SMALL layout");
+        // Default JS, CSS, and HTML
     } else if ($.mobile.media("(min-width: 768px)")) {
         // Medium layout
         //- remove some data-role=page, reconfigure UI
-        console.info("I'm a MEDIUM layout");
         var ct_page = $("#ct--1-page").remove();
         
         ct_page.removeAttr('data-role') // not a page
@@ -23,7 +22,7 @@ gsd.rspd.init = function () {
         ct_page.addClass('ui-block-b');
 
         if (1 != $('.na-new').size()) {
-            console.error("ASSERTION: We wanted to grab the one New Next Action button");
+            //console.error("ASSERTION: We wanted to grab the one New Next Action button");
         } 
 
         var newNa = $('.na-new').remove();
@@ -33,11 +32,9 @@ gsd.rspd.init = function () {
 
         $('#contexts-page [data-role=header]').append(newNa);
 
-        $('#gtd-book').attr('src', 'http://ecx.images-amazon.com/images/I/51xhKBKxmQL._SL160_.jpg');
-
         gsd.rspd.contextsNav();
     } else {
-        console.info("HELP I DON'T KNOW my layout");
+        //console.info("HELP I DON'T KNOW my layout");
     }
     // else if max-width < 1025
     // Large layout (future, TBD)
@@ -56,8 +53,8 @@ gsd.rspd.contextsNav = function () {
         .live('click', function (e) {
             e.preventDefault();
             $('[data-page-type=context]').hide();
-            console.info("Showing ", '#ct-' + $(this).attr('data-role-id') + '-page');
             $('#ct-' + $(this).attr('data-role-id') + '-page').show();
+
             var page = $('[data-db-id=' + $(this).attr('data-role-id') + ']');
             gsd.cont.currentContext = {
                 id: parseInt(page.attr('data-db-id'), 10),

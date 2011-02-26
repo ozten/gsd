@@ -27,3 +27,10 @@ div#about-page.ui-page .ui-content {
 #about-page h2, #about-page h3 {
     clear: right;
 }
+
+#no-dice img, #no-dice div {
+    float: left;
+}
+#no-dice ul {
+    padding-left: 150px; list-style: none;
+}

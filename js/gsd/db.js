@@ -1,4 +1,3 @@
-console.info("eval db");
 var gsd = gsd ? gsd : {};
 gsd.db = gsd.db ? gsd.db : {};
 gsd.db.driver = null;
@@ -32,14 +31,17 @@ gsd.db.init = function () {
     }
 
     if (! gsd.db.driver) {
-        alert("You're browser aint gonna work.");
+        $('#no-dice').show();
+        $('#contexts-nav').hide();
+        $('[data-page-type=context]').hide();
     }
 
 };
 
 gsd.db.setupDb = function (completeFn) {
-    console.info("Calling setup");
-    gsd.db.driver.setupDb(completeFn);
+    if (gsd.db.driver) {
+        gsd.db.driver.setupDb(completeFn);
+    }
 };
 
 /**

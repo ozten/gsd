@@ -7,7 +7,6 @@ gsd.view.init = function () {
             // We know current context or default to ?            
             // disable then enable and setupNextActionEditor would be good...
             gsd.db.createNextAction(function (next_action) {
-                console.info("na created context=", next_action.context);
                 gsd.currentNextAction = next_action;                
                 
                 gsd.view.setupNextActionEditor(next_action.id);
@@ -28,11 +27,9 @@ gsd.view.init = function () {
             return false;
         });
         $('.na-edit').live('start-edit-next-action', function (event, id) {
-            console.info("NA START EDIT EVENTED ");
             gsd.view.setupNextActionEditor(id);
         });
         $('.na-delete').live('click', function (event) {
-            console.info("NA DELETE CLICKED");
             var na = $(this).parents('.next-action'),
                 id = parseInt(na.attr('data-na-id'));
             event.preventDefault();
@@ -76,7 +73,6 @@ gsd.view.context_dom_id = function (db_id) {
  * TODO make async and go to db to find out the id#
  */
 gsd.view.context_dom_page_id = function (db_id) {
-    console.info("dom_page_id=", db_id);
     return 'ct-' + db_id + '-page';
 }; // end context_dom_id
 
@@ -84,7 +80,6 @@ gsd.view.context_dom_page_id = function (db_id) {
  *
  */
 gsd.view.ensureContextListItem = function (db_id, cli_id, name) {
-    console.info("ensureContextLI db=", db_id, "cli_id=", cli_id, " ", name);
     var cli = $('#' + cli_id);
     if (1 == cli.size()) return;
     
@@ -102,7 +97,6 @@ gsd.view.ensureContextListItem = function (db_id, cli_id, name) {
     $('#contexts-list').append(c);
 }; //end ensureContextListItem
 gsd.view.ensureContextPage = function (db_id, contextId, name) {
-    console.info("ensureContextPage contextId=", contextId, " name=", name);
     var page = $('#' + contextId);
     if (page.size() == 0) {
         page = $('#ct--1-page').clone();
@@ -112,7 +106,6 @@ gsd.view.ensureContextPage = function (db_id, contextId, name) {
         page.find('h2').text("@" + name);
         page.attr('data-name', name);
         var parent = $('#ct--1-page').parent();        
-        console.info("page's parent = ", parent);
         $('.next-action', page).remove();
         parent.append(page);
     } 
@@ -130,7 +123,7 @@ gsd.view.nextActionIDFromDOM = function (domID) {
         } else if ('number' == typeof domID) {
             return domID;
         } else {
-            console.error("ASSERTION FAILED... nextActionIDFromDOM given ", domID);
+            //console.error("ASSERTION FAILED... nextActionIDFromDOM given ", domID);
         }            
 }; // end nextActionIDFromDOM
 
@@ -141,7 +134,6 @@ gsd.view.ensureNextAction = function (contextDbId, id, nextAction) {
 
     // page can be a jQuery page or a block in the layout...
 
-    console.info('page exists? right? #pages=', page.size(), 'na id=', id, ' cli_id=', cli_id, ' cpage_id=', cpage_id);
 
         //increment data counter on #contexts-page
     var count = parseInt($('#' + cli_id + ' .ui-li-count').text()) + 1;
@@ -149,24 +141,23 @@ gsd.view.ensureNextAction = function (contextDbId, id, nextAction) {
 
     var nextActionLi = $('#na' + id + "-li"); // TODO nextActionIDFromDOM and write nextActionDOMId(numId)
     if (nextActionLi.size() > 1) {
-        console.error("ASSERTION: We have more than 1 nextActionLi #=", nextActionLi.size(), " divs=", nextActionLi);
+        //console.error("ASSERTION: We have more than 1 nextActionLi #=", nextActionLi.size(), " divs=", nextActionLi);
     }
     if (nextActionLi.size() == 0) {
             var naLi = $(gsd.view.naDOMSelector + ':first')
             var proto = naLi.clone();
             if (naLi.size() != 1) {
-                console.error("ASSERTION: We didn't find a nextActionLi", naLi);
+                //console.error("ASSERTION: We didn't find a nextActionLi", naLi);
             }
-            console.info("Cloned the proto", proto);
 
             if (naLi.hasClass('fake-entry')) {
                 proto.removeClass('fake-entry');
                 // Used to bootstrap UI
                 //kill all the fake entries
                 if ($(gsd.view.naDOMSelector + '.fake-entry').size() != 1) {
-                    console.error("We expected only 1 fake entry but found #=", 
+                    /*console.error("We expected only 1 fake entry but found #=", 
                                   $(gsd.view.naDOMSelector + '.fake-entry').size(),
-                                  " entries=", $(gsd.view.naDOMSelector + '.fake-entry'));
+                                  " entries=", $(gsd.view.naDOMSelector + '.fake-entry'));*/
                 }
                 $(gsd.view.naDOMSelector + '.fake-entry').remove()
             }
@@ -175,29 +166,24 @@ gsd.view.ensureNextAction = function (contextDbId, id, nextAction) {
 
             gsd.view.populate(proto, nextAction);
             if (page.size() != 1) {
-                console.error("ASSERTION: We didn't have 1 page #pages", page.size(), " page=", page);
+                //console.error("ASSERTION: We didn't have 1 page #pages", page.size(), " page=", page);
             }
             if ($('.action-items', page).size() != 1) {
-                console.error("ASSERTION: We didn't have 1 set of action items under page #item blocks=", 
-                              $('.action-items', page).size(), " items=", $('.action-items', page));
+                /*console.error("ASSERTION: We didn't have 1 set of action items under page #item blocks=", 
+                  $('.action-items', page).size(), " items=", $('.action-items', page));*/
             }
             $('.action-items', page).append(proto);
             
             nextActionLi = proto;
     } else {
-        console.warn("NA already exists in the DOM");
+        //console.warn("NA already exists in the DOM");
     }
     return nextActionLi;
 };
 
 gsd.view.updateContextNACount = function () {
     $('#contexts-list li.ui-btn').each(function (i, el) {
-            console.info(i, el);
             var ctx_id = parseInt($(el).find('a').attr('data-role-id'), 10);
-            console.info("Dealking with ", ctx_id);
-            console.info($('#ct-' + ctx_id + '-page .next-action').size());
-                $('#ct-' + ctx_id + '-li .ui-li-count').text(
-                    $('#ct-' + ctx_id + '-page .next-action').size());
         });
 
     //    var count = parseInt($('#' + ctx_id + ' .ui-li-count').text()) + 1;
@@ -215,11 +201,10 @@ gsd.view.populate = function (domEl, nextAction) {
 gsd.view.updateNextAction = function (next_action) {
     var naLi = $('#na' + next_action.id + '-li');
     if (naLi.size() == 0) {
-        console.warn("No div... creating");
         gsd.view.ensureNextAction(next_action.context, next_action.id, next_action);
         naLi = $('#na' + next_action.id + '-li');
         if (naLi.size == 0) {
-            console.error("ASSERTION: We should have created a div");
+            //console.error("ASSERTION: We should have created a div");
         }
     }
     gsd.view.populate(naLi, next_action);
@@ -230,10 +215,8 @@ gsd.view.updateNextAction = function (next_action) {
     }
 };//end updateNextAction
 gsd.view.setupNextActionEditor = function (id) {
-    console.info('setupNextActionEditor id=', id);
         gsd.db.getNextAction(id, function (na) {
             gsd.currentNextAction = na;
-            console.info("editor fresh read is na id=", na.id, " context=", na.context);
             var editor = $('#next-action-editor-page');
             $('.next-action-title', editor).text(na.title);
             $('textarea', editor).val(na.content)
