@@ -84,58 +84,6 @@ background-image: -moz-linear-gradient(
     background: url(/i/privacy_50x32.png) no-repeat 20px 5px;
     min-height: 50px;
 }
-/*
-#about-page h2, #about-page h3 {
-    clear: none;
-}
-#gtd-rtfm { font-weight: 900; }
-
-#why {
-    float: left;
-    width: 50%;
-    background-color: rgba(0, 0, 0, 0.5);
-    color: rgba(0, 255, 0, 1);
-    padding: 1em;
-    text-shadow: none;
-}
-#why a {
-    color: rgba(200, 255, 200, 1);
-    text-shadow: none;
-}
-#collaborate {
-    float: left;
-    width: 30%;
-    background-color: rgba(255, 255, 255, 0.5);
-    border: solid 2px #CCC;
-    -moz-border-radius: 12px;
-    -moz-box-shadow: 3px 3px 1em rgba(150, 150, 150, 0.5);
-    margin-left: 1em;
-    padding: 1em;
-}
-    #collaborate h3 {
-        text-shadow: 0px 2px;
-    }
-    #usage-example, #usage-devices {
-        float: left;
-        margin: auto 0px 1em 0px;
-        padding: 8px 8px 0px 8px;        
-    }
-    #usage-example {
-        width: 30%;
-        background-color: rgba(255, 255, 255, 0.5);
-        border: solid 2px #CCC;
-        -moz-border-radius: 12px;
-        -moz-box-shadow: 3px 3px 1em rgba(150, 150, 150, 0.5);
-    }
-    #usage-devices {
-        background-color: rgba(255, 255, 255, 0.5);
-        margin-left: 1em;
-        width: 60%;
-    }
-    #about-page #usage-privacy {
-        clear: left;
-    }
-*/
 
 .continuous {
     text-shadow: 1px 1px #000;
