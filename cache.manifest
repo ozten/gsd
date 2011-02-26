@@ -1,14 +1,15 @@
 CACHE MANIFEST
 # Version 2
 CACHE:
+/about-page.html
 /index.html
 /css/stylo.css
 /css/reset.css
 /css/stylo_768.css
 /favicon.ico
+
 /js/gsd.js
 /js/main.js
-/js/libs
 /js/libs/jquery.mobile-1.0a3/images/icons-36-black.png
 /js/libs/jquery.mobile-1.0a3/images/form-radio-on.png
 /js/libs/jquery.mobile-1.0a3/images/icons-18-black.png
@@ -30,8 +31,17 @@ CACHE:
 /js/gsd/view.js
 /js/gsd/controller.js
 /js/gsd/db.js
-/js/gsd/db
 /js/gsd/db/sqlite.js
 /js/gsd/db/indexeddb.js
+
+/i/apple-touch-icon-114x114.png
+/i/privacy_50x32.png
+/i/apple-touch-icon-57x57.png
+/i/favicon32.png
+/i/apple-touch-icon-72x72.png
+/i/favicon.png
+/i/favicon32.ico
+/i/logo_50x106.png
+
 NETWORK:
 *
