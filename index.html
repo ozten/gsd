@@ -69,6 +69,7 @@
     <div data-role="header" data-inline="false">
 	<h1>GSD</h1>
         <h2>@Unknown Context</h2>
+        <a href="/" data-icon="home" data-iconpos="notext" data-direction="reverse" class="ui-btn-right gsd-home" data-role="button" data-rel="back">Home</a>
     </div><!-- /header -->
     <div data-role="content">
         <a href="#next-action-editor-page" class="na-new" data-role="button">New Action Item</a>
@@ -89,7 +90,7 @@
 <div id="next-action-editor-page" data-role="page">
     <div data-role="header" data-inline="false">
 	<h1>Edit <span class="next-action-title"></span></h1>
-        <a href="#" class="na-another-new ui-btn-right" data-role="button">Save and Add Another</a>
+        <a href="/" data-icon="home" data-iconpos="notext" data-direction="reverse" class="ui-btn-right gsd-home" data-role="button" data-rel="back">Home</a>
     </div><!-- /header -->
   <div data-role="content">
     <form action="#">
@@ -97,22 +98,32 @@
       <label for="context-selector">Context:</label>
       <select id="context-selector">
         <option value="-1" selected>@?</option>
-        <option value="new">New Context...</option>
+        <!- option value="new">New Context...</option -->
       </select>
       </fieldset>
       <div id="display" class="loading"><textarea></textarea></div>
+      <div data-inline="true" data-role="controlgroup" data-type="horizontal">
+        <!-- input type="submit" id="" value="Save" data-theme="b" data-icon="back" data-rel="back" / -->
+        <a href="/" value="Save" data-role="button" data-theme="b" data-icon="back" data-rel="back" data-direction="reverse">Save</a>
+        <input type="submit" id="na-another-new" value="Save and Add Another" data-icon="plus" data-theme="b" />
+      </div>
+
     </form>
   </div>
     <div data-role="footer">
         <a href="#about-page.html" data-role="button" data-icon="info" data-xinline="true">About</a>
+        <a href="#contexts-options-page" data-role="button" data-icon="gear" data-inline="true">Customize Contexts</a>
     </div><!-- /header -->
 </div><!-- /page -->
 
-<div id="settings-page" data-role="page">
+<div id="contexts-options-page" data-role="page">
   <div data-role="header" data-inline="false">
-	<h1>Options</h1>
+	<h1>Customize Contexts</h1>
     </div><!-- /header -->
-</div>
+  <div data-role="content">
+    TODO: Coming soon.
+  </div>
+</div><!-- /#contexts-options-page -->
 
 <script src="http://code.jquery.com/jquery-1.5.min.js"></script>
 <script>!window.jQuery && document.write(unescape('%3Cscript src="js/libs/jquery-1.5.min.js"%3E%3C/script%3E'));</script>

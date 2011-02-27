@@ -16,7 +16,7 @@ gsd.view.init = function () {
 
             return true;
         });
-        $('.na-another-new').live('click', function (event) {
+        $('#na-another-new').live('click', function (event) {
             event.preventDefault();
             // Prep data for editor
             gsd.db.createNextAction(function (next_action) {
