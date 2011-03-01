@@ -1,5 +1,5 @@
 
-/*jslint browser: true, plusplus: false, newcap: false, onevar: false  */
+/*jslint browser: true, plusplus: false, newcap: false, onevar: false */
 /*global window: false, require: false, $: false, openDatabase: false, console: false, alert: false */
 var gsd = gsd ? gsd : {};
 gsd.db = gsd.db ? gsd.db : {};

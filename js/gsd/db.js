@@ -1,3 +1,6 @@
+/*jslint browser: true, plusplus: false, evil: true */
+/*global window: false, document: false, $: false, console: false */
+
 var gsd = gsd ? gsd : {};
 gsd.db = gsd.db ? gsd.db : {};
 gsd.db.driver = null;
@@ -8,7 +11,7 @@ gsd.db.dbDescription = "A simple web app for Getting Things Done.";
 gsd.db.init = function () {
 
     if ("webkitIndexedDB" in window && 
-        window.navigator.userAgent.indexOf("Chrome") < 0 ) {
+        window.navigator.userAgent.indexOf("Chrome") < 0) {
         // Chrome 10 has IndexedDB, but it's different than
         // Fx 4... Until we add support, let's fallback to sqlite
 
@@ -76,7 +79,7 @@ gsd.db.deleteNextAction = function (id, successFn) {
 
 gsd.db.getAllNextActions = function (loadFn, finFn) {
     gsd.db.driver.getAllNextActions(loadFn, finFn);
-}
+};
 
 /**
  * loadFn is a function that takes to parameters key and value. It 
@@ -85,7 +88,7 @@ gsd.db.getAllNextActions = function (loadFn, finFn) {
  */
 gsd.db.getAllContexts = function (loadFn, finFn) {
     gsd.db.driver.getAllContexts(loadFn, finFn);
-}
+};
 
 /**
  * Read a context by it's id. loadFn will be called

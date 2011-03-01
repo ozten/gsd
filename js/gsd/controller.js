@@ -1,3 +1,5 @@
+/*jslint browser: true, plusplus: false */
+/*global window: false, document: false, $: false, console: false */
 var gsd = gsd ? gsd : {};
 gsd.cont = gsd.cont ? gsd.cont : {};
 
@@ -7,8 +9,10 @@ gsd.cont.populateUI = function () {
         gsd.db.getAllNextActions(
             function (key, value) {
                 //JQM
-                ctxId = parseInt(value.context);
-                var contextLoaded = function (context) {
+                var ctxId, contextLoaded;
+
+                ctxId = parseInt(value.context, 10);
+                contextLoaded = function (context) {
                     var cli_id = gsd.view.context_dom_id(context.id),
                         cpage_id = gsd.view.context_dom_page_id(context.id);
 
@@ -27,45 +31,34 @@ gsd.cont.populateUI = function () {
             function () {
                 //console.info("Done");
                 $('#loading-next-actions').remove();
-        });
+            });
         gsd.db.getAllContexts(
             function (key, value) {
                 $('#context-selector').append("<option value='" + value.id + "'>@" + value.name + "</option>");
                 //JQM
-                var cli_id = gsd.view.context_dom_id(key);
+                var cli_id = gsd.view.context_dom_id(key),
+                    cpage_id;
                 gsd.view.ensureContextListItem(key, cli_id, value.name);
-                var cpage_id = gsd.view.context_dom_page_id(key);
+                cpage_id = gsd.view.context_dom_page_id(key);
                 gsd.view.ensureContextPage(value.id, cpage_id, value.name);
                 return true;
             }, 
             function () {
                 //console.info("Done loading contexts");
         });
-        /* $(document).bind('pagebeforeshow', function (e) {
-                console.info("pagebeforeshow", this);
-                });        
-        $(document).bind('pageshow', function (e, ui) {
-                console.info("pageshow", ui.prevPage);
-                console.info(ui.prevPage.attr('id'));
-            if ('contexts-page' == ui.prevPage.attr('id')) {
-                console.info("New page is ", this);
-            }
-        });
-        $(document).bind('pagebeforehide', function (e) {
-                console.info("pagebeforehide");
-        });
-        */
+
         $(document).bind('pagehide', function (e, ui) {
-            if ('context' == ui.nextPage.attr('data-page-type')) {
+            if ('context' === ui.nextPage.attr('data-page-type')) {
                 gsd.cont.currentContext = {
                     id: ui.nextPage.attr('data-db-id'), //TODO make numeric
                     name: ui.nextPage.attr('data-name')
-                }
-            } else if ('about-page' == ui.nextPage.attr('id')) {
+                };
+            } else if ('about-page' === ui.nextPage.attr('id')) {
                 if ($.mobile.media("(min-width: 768px)")) {
                     $('#github-ribbon').attr('style', '');
                 }
                 $('#gtd-book').attr('src', 'http://ecx.images-amazon.com/images/I/51xhKBKxmQL._SL160_.jpg');
+                gsd.rspd.mozCalcFixup();
             }
         });
         $('#export_db').bind('click', function (event) {
@@ -74,22 +67,24 @@ gsd.cont.populateUI = function () {
         });
         $('.na-edit').live('click', function (e) {
             e.preventDefault();
-            var id = parseInt($(this).parents('.next-action').attr('data-na-id'));
+            var id = parseInt($(this).parents('.next-action').attr('data-na-id'), 10);
             $(this).trigger('start-edit-next-action', [id]);
             return false;
         });
         $('#display textarea').bind('change, keyup', function (event) {
             gsd.cont.saveCurrent();
         });
-        //$.mobile.changePage('#contexts-page');
-};//end populateUI
+    };//end populateUI
+
 gsd.cont.currentContext = { //Default context
         id: -1,
         name: '?'
-};
+    };
+
 gsd.cont.timeoutId = null;
+
 gsd.cont.saveCurrent = function () {
-        if (gsd.cont.timeoutId != null) {
+        if (gsd.cont.timeoutId !== null) {
             clearTimeout(gsd.cont.timeoutId);
         }
         gsd.cont.timeoutId = setTimeout(function () {
@@ -104,7 +99,8 @@ gsd.cont.saveCurrent = function () {
                 // Use custom events to decouple
                 gsd.db.updateNextAction(gsd.currentNextAction.id, gsd.currentNextAction, function () {});
             }, 300);
-};
+    };
+
 gsd.cont.exportDatabase = function () {
     var actions = [];
     gsd.db.getAllNextActions(            

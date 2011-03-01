@@ -1,3 +1,6 @@
+/*jslint browser: true, plusplus: false */
+/*global window: false, document: false, $: false, console: false */
+
 var gsd = gsd ? gsd : {};
 gsd.rspd = gsd.view ? gsd.view : {};
 
@@ -8,7 +11,8 @@ gsd.rspd.init = function () {
     } else if ($.mobile.media("(min-width: 768px)")) {
         // Medium layout
         //- remove some data-role=page, reconfigure UI
-        var ct_page = $("#ct--1-page").remove();
+        var ct_page = $("#ct--1-page").remove(),
+            newNa;
         
         ct_page.removeAttr('data-role') // not a page
                .removeAttr('data-url'); // no need to go there
@@ -21,16 +25,28 @@ gsd.rspd.init = function () {
         $('#contexts-nav').addClass('ui-block-a');
         ct_page.addClass('ui-block-b');
 
-        if (1 != $('.na-new').size()) {
+        if (1 !== $('.na-new').size()) {
             //console.error("ASSERTION: We wanted to grab the one New Next Action button");
         } 
 
-        var newNa = $('.na-new').remove();
+        newNa = $('.na-new').remove();
         newNa.attr('data-inset', 'true');
         newNa.attr('data-theme', 'b');
         newNa.addClass('ui-btn-right');
 
         $('#contexts-page [data-role=header]').append(newNa);
+        console.info("Prepping Moz Calc Fixup");
+        gsd.rspd.mozCalcFixup = function () {
+            // TODO test for -moz-calc and skip those browsers
+            //  width: -moz-calc( 100% - 335px); 
+            $('.ui-grid-a .ui-block-b').css('width', ($('.ui-grid-a').width() - 335) + 'px');
+            //$('#about-page #hackers').css('width', ((window.innerWidth * 0.58) - 115) + 'px');
+            $('#about-page #hackers').css('width', 
+                Math.round(($('#about-page [data-role=content]').width() * 0.58) - 300) + 'px');
+            //-moz-calc(100% - 58% - 115px);
+        };
+        gsd.rspd.mozCalcFixup();
+        $(window).bind('resize', gsd.rspd.mozCalcFixup);
 
         gsd.rspd.contextsNav();
     } else {
@@ -45,9 +61,11 @@ gsd.rspd.init = function () {
     }
 
 };
+
 gsd.rspd.isNotSmallLayout = function () {
     return ! $.mobile.media("(max-width: 480px)");
-}
+};
+
 gsd.rspd.contextsNav = function () {
     $('#contexts-list li a').attr('href', '#')
         .live('click', function (e) {
@@ -60,14 +78,9 @@ gsd.rspd.contextsNav = function () {
                 id: parseInt(page.attr('data-db-id'), 10),
                 name: page.attr('data-name')
             };
-
-            
             // Highlight active context
             $('#contexts-list > li.active-context').removeClass('active-context');
             $(this).parents('li').addClass('active-context');
-            //$('#contexts-list li[data-theme=e]').attr('data-theme', 'c');
-            //$(this).parents('li').attr('data-theme', 'e');
-
             return false;
         });
 };

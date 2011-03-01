@@ -6,7 +6,8 @@
   margin-left: 15px;
 }
 .ui-grid-a .ui-block-a  { width: 320px; }
-.ui-grid-a .ui-block-b { width: -moz-calc( 100% - 335px); }
+.ui-grid-a .ui-block-b { width: -moz-calc( 100% - 335px); 
+}
 
 li.active-context.ui-btn {
     box-shadow: inset 0px 0px 0.3em 0.1em rgba(82, 143, 188, 0.5);
