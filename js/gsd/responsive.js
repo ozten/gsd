@@ -35,7 +35,6 @@ gsd.rspd.init = function () {
         newNa.addClass('ui-btn-right');
 
         $('#contexts-page [data-role=header]').append(newNa);
-        console.info("Prepping Moz Calc Fixup");
         gsd.rspd.mozCalcFixup = function () {
             // TODO test for -moz-calc and skip those browsers
             //  width: -moz-calc( 100% - 335px); 

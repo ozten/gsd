@@ -8,8 +8,8 @@ gsd.model.init = function () {};
 
 gsd.model.initialNextActions = [
     { 
-        title: 'Plant Kale',
-        content: 'Plant Kale\nIn pots near window.'
+        title: 'Play with GSD',
+        content: 'Play with GSD\nThis is a Next Action.\nThat is like a TODO list item.\nIt is the in @? Context.\nYou can click the done Arrow... or add more actions!'
     }
 ];
 gsd.model.initialContexts = ["Work", "Home", "Phone", "Errands", "Grocery Store"];
