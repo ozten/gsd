@@ -13,36 +13,39 @@
 <script type="text/javascript" src="/js/gsd/sync.js"></script>
 <script type="text/javascript" src="/js/test/qunit.js"></script>
 <script type="text/javascript">
+var arrayKeyLengthEqual = function (a, len, msg) {
+    var i = 0, k;
+    for (k in a) {
+        i++;
+    }
+    equal(i, len, msg);
+};
 test("Basic sync", function () {
-    // Replicants
-    var a = {
-        siteId: 'siteA',
-        connected: true,
-        // Simulate the IndexedDb
-        indexedDb: {},
-    };
-    var b = {
-        siteId: 'siteB',
-        connected: true,
-        // Simulate the IndexedDb
-        indexedDb: {},
-    };
+    /* Simulate our Unhosted server */
+    var log = []; // List of operation
 
-    // IndexedDb Object Store
-    var os = 'contexts'; 
-
-    a.indexedDb[os] = {};
-    b.indexedDb[os] = {};
- 
+    /* Simulate a local computer aka site */
     var site = {
+        // Sync Public
+        precondition: function (operation) { return true; },
+        resolveConflict: function (op, key, value) {
+            console.info("CONFLICT ", op, key, value);
+        },
+        // DB Public (get ride of commit??
         commit: function (op) {
-            switch (op.opCode) {
-                case ADD:
+            switch (op.cmd) {
+
+                case Sync.ADD:
                     this.localAdd(op.os, op.key, op.value);
-                case PUT:
+                    break;
+                case Sync.PUT:
                     this.localPut(op.os, op.key, op.value);
-                case DEL:
+                    break;
+                case Sync.DEL:
                     this.localDelete(op.os, op.key);
+                    break;
+                default:
+                    throw Exception("Unknown opcode");
             }
         },
         localAdd: function (os, key, value) {
@@ -58,34 +61,75 @@ test("Basic sync", function () {
             delete this.indexedDb[os][key];
         }
     };
-    a.__proto__ = site;
-    b.__proto__ = site;
-    
+    var newSite = function (siteId) {
+        var a = {
+            siteId: siteId,
+            connected: true,
+            // Simulate the IndexedDb
+            indexedDb: {},
+            sync: null,
+        };
+        a.__proto__ = site;
+        a.sync = newSync(siteId, a /*site.precondition, site.commit, site.resolveConflict*/);
+        return a;
+    };
+
+    // Replicants
+    var a = newSite('siteA');
+    var b = newSite('siteB');
+
+    var propagate = function (op) {
+        log.push(op);
+    };
+    a.sync.propagate = propagate;
+    b.sync.propagate = propagate;
+
+    var poller = function () {}; // Disabled for tests
+
+    a.sync.poller = poller;
+    b.sync.poller = poller;
+
+    // IndexedDb Object Store
+    var os = 'contexts'; 
+
+    a.indexedDb[os] = {};
+    b.indexedDb[os] = {};
+     
     // A context object to be stored in contexts
     // item0 here would normally be a uuid
     var content0 = {key: 'item0', name: 'Test 0'};
 
-    // Star topology, ops is global
-    var ops = [];
-    // Simulate Unhosted
-    window._propagate = function (op) {
-        ops.push(ops);
-    }
-
-    // Simulate Unhosted
-    // Have a site process updates from the Unhosted message queue
-    window._receive = function (site) {
-        for (var i=0; i < ops.length; i++) {
-            site.receiveUpdate(ops[i]);
-        }
-    }
     a.localAdd(os, content0.key, content0);
-    var aOp0 = newOperation(a.siteId, ADD, os, content0.key, content0);
+    ok(a.indexedDb[os][content0.key], "Testing the unit test, our simulated indexedDb works");
+    equal(a.indexedDb[os][content0.key].name, content0.name);
+
+    equal(content0.name, a.indexedDb[os][content0.key].name, "Testing test simulation of local add");
+
+    a.sync.send(Sync.ADD, os, content0.key, content0);
+
+    equal(log[0].opCode, Sync.Add, "Testing the Unit Test send is hooked up");
+    equal(log[0].os, os);
+    equal(log[0].key, content0.key);
+    equal(log[0].value.key, content0.key);
+    equal(log[0].value.name, content0.name);
+
+
     content0.name = 'Test 0 changed';
     notEqual(content0.name, a.indexedDb[os][content0.key].name, "Copy by value, need local or remote commit");
     a.localPut(os, content0.key, content0);
-    equal(content0.name, a.indexedDb[os][content0.key].name, "Testing test simulation of local add");
-    var aOp0 = newOperation(a.siteId, PUT, os, content0.key, content0);
+    equal(a.indexedDb[os][content0.key].name, content0.name, '(Testing the test) Item in IndexedDb was udpated');
+    equal(content0.name, (a.indexedDb[os][content0.key]).name, "Testing test simulation of local put");
+    a.sync.send(Sync.PUT, os, content0.key, content0);    
+
+    equal(log[1].opCode, Sync.Add, "Testing the Unit Test send adds to log");
+    equal(log[1].os, os);
+    equal(log[1].key, content0.key);
+    equal(log[1].value.key, content0.key);
+    equal(log[1].value.name, content0.name);
+
+    arrayKeyLengthEqual(b.indexedDb[os], 0, "Clean db");
+    b.sync.receiveUpdates(log);
+    arrayKeyLengthEqual(b.indexedDb[os], 1, "We have one item in the db now");
 
 });// test("Basic sync")
 </script>

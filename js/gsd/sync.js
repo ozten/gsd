@@ -1,5 +1,22 @@
 /* Much respekt to Optimistic Replication YASUSHI SAITO and MARC SHAPIRO 2005 */
 
+/*
+    Sync API
+    var siteId = '2l3kj432kl';
+    var precondition = function (operation) {};
+    var resolveConflict = function (opcode, key, value) {};
+    //sync = newSync(siteId, precondition, resolveConflict);
+    var application = {
+        precondition: function () {}, 
+        commit
+        resolveConflict};
+    sync = newSync(siteId, application);
+    sync.send(Sync.ADD, 'mystuff', 'record-3l4kj32l', {msg; 'Hello World!'});
+    sync.send(Sync.PUT, 'mystuff', 'record-3l4kj32l', {msg; 'GULP!'});
+    sync.send(Sync.DEL, 'mystuff', 'record-3l4kj32l');
+
+ */
+
 /* We are using Optimistic asynchronous replication which 
    copies an IndexedDb dataset in the background to other
    replicants via a centralized Unhosted node 
@@ -11,7 +28,7 @@
            State Transfer at the record level (not fine grained OT)
            Scheduling is Syntactic, but taking IndexedDb API into account
            Conflict resolution is Syntactic
-           Propogation is polling over a Star network
+           Propagation is polling over a Star network
            Commitment is implicit by common knowlege due to star topology and thomas' write rule (wiki style)
 */
 
@@ -19,7 +36,7 @@ var replica = "A copy of the object stored at a site (this IndexedDb)";
 var object = "A IndexedDb record";
 var site = "An active web browsing Indexed session";
 var masterSite = "A site that can add, update, and delete replicas";
-var operation = "Description to an update to an object. Access to a replica, which is later propogated to other sites. An operation is a pre-condition which may detect a conflict plus a prescription to update the obejct.";
+var operation = "Description to an update to an object. Access to a replica, which is later propagated to other sites. An operation is a pre-condition which may detect a conflict plus a prescription to update the obejct.";
 
 // tenative scheduling - sorting operations
 
@@ -30,167 +47,237 @@ var clock = "Counter used to help sort operations";
 var COMMIT = 1; // Apply Operation
 var CONFLICT = 2; // A pre-condition is violated
 var log = "A record of recent operations kept at each site";
-var precondition = "Predicate defining the input domain of an operation";
-var propogate = "Transfer an operation to all sites";
+
+//var propagate = ;
 var resolver = "app provided procedure for resolving conflicts";
 var schedule = "An ordered set of operations to execute";
 var submit = "enter an operatio into the system, subject to tentative execution";
 var TENTATIVE = true; // Operation applied on isolated replica: may be reordered or aborted
 
-var happensBefore = function (opA, opB) {
-    if (opA.site === opB.site) {
-        return true;
-    } else if (opA.site !== opB.site &&
-               after(opB.clock, opA.executed)) {
-        return true;
-    } else if (findOperation(opA, opB)) {
-        return true;
-    }
-};
+//TODO get rid of __proto__ and pick an inheritance patern
+// probably Sync = function ...
+// Sync.prototype = {
+// sync: function (... return new Sync(...
+
+/** 
+ * Sync is IndexedDb/sqlite specific
+ * Class level functions and properties
+ */
+window.Sync = {
+    ADD: 0,
+    PUT: 1,
+    DEL: 2,
+
+}; // Sync
 
 /**
- * Finds an operation opY where opA.clock is before opY.clock and
- * y.clock is before opB.clock
- * 
- * @return boolean - True if this exists, false otherwise
+ * precondition - Predicate defining the input domain of an operation
+ *         function (operation) { return true; }
  */
-var findOperation = function (opA, opB) {
-    // Go backwards through log looking for an operation that
-    // satisfies this contraint. Give up if opY.clock is before opA
-    // + operation padding, or if opY.clock is before opB (??)
-}
+var newSync = function (siteId, application/*precondition, commit, resolveConflict*/) {
+    var o = {
+        siteId: siteId,
+        vectorClock: {
+            site: siteId,
+            clock: 0,
+        },
 
-var vectorClock = {
-    site: 'foo',
-    clock: 0,
-    date: 12345678 // Used for conflict resolution ? optional ?
-};
+        /* Assoc Array of site id to clocks */
+        vc: {},
+        app: {},
+        happensBefore: function (opA, opB) {
+            if (opA === this.noSuchOp) {
+                // First op ever
+                return true;
+            } else if (opA.issuer === opB.issuer) {
+                // Same node, queue gaurentees FIFO
+                return true;
+            } else if (opA.issuer !== opB.issuer &&
+                       after(opB.clock, opA.executed)) {                
+                return true;
+            } else if (findOperation(opA, opB)) {
+                return true;
+            }
+        },
 
-var CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split(''); 
+        /**
+         * Finds an operation opY where opA.clock is before opY.clock and
+         * y.clock is before opB.clock
+         * 
+         * @return boolean - True if this exists, false otherwise
+         */
+        findOperation: function (opA, opB) {
+            // Go backwards through log looking for an operation that
+            // satisfies this contraint. Give up if opY.clock is before opA
+            // + operation padding, or if opY.clock is before opB (??)
+        },
 
-var uuid4 = function (len, radix) {
-    var chars = CHARS, uuid = [];
-    radix = radix || chars.length;
+        CHARS: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split(''),
 
-    if (len) {
-      // Compact form
-      for (var i = 0; i < len; i++) uuid[i] = chars[0 | Math.random()*radix];
-    } else {
-      // rfc4122, version 4 form
-      var r;
+        /** http://www.broofa.com/2008/09/javascript-uuid-function/ */
+        uuid4: function (len, radix) {
+            var chars = CHARS, uuid = [];
+            radix = radix || chars.length;
 
-      // rfc4122 requires these characters
-      uuid[8] = uuid[13] = uuid[18] = uuid[23] = '-';
-      uuid[14] = '4';
+            if (len) {
+                // Compact form
+                for (var i = 0; i < len; i++) uuid[i] = chars[0 | Math.random()*radix];
+            } else {
+                // rfc4122, version 4 form
+                var r;
 
-      // Fill in random data.  At i==19 set the high bits of clock sequence as
-      // per rfc4122, sec. 4.1.5
-      for (var i = 0; i < 36; i++) {
-        if (!uuid[i]) {
-          r = 0 | Math.random()*16;
-          uuid[i] = chars[(i == 19) ? (r & 0x3) | 0x8 : r];
-        }
-      }
-    }
+                // rfc4122 requires these characters
+                uuid[8] = uuid[13] = uuid[18] = uuid[23] = '-';
+                uuid[14] = '4';
 
-    return uuid.join('');
-  };
-uuid4();
+                // Fill in random data.  At i==19 set the high bits of clock sequence as
+                // per rfc4122, sec. 4.1.5
+                for (var i = 0; i < 36; i++) {
+                    if (!uuid[i]) {
+                        r = 0 | Math.random()*16;
+                        uuid[i] = chars[(i == 19) ? (r & 0x3) | 0x8 : r];
+                    }
+                }
+            }
 
-var siteId;
+            return uuid.join('');
+        },
 
-var loadSiteId = function () {
-    if ('localStorage' in window && window['localStorage'] != null) {
-        if(!!localStorage['/sync/site-id']) {
-            siteId = localStorage['site-id'];
-        } else {
-            localStorage['/sync/site-id'] = siteId = uuid4(8);
-        }
-    } else {
-        throw Exception("Uhm no localStorage, this ain't gonna work");
-    }
-};
+        /** TODO move to another module? */
+        loadVC: function () {
+            if (!!localStorage['/sync/vc']) {
+                this.vc = JSON.parse(localStorage['/sync/vc']);
+            } else {
+                localStorage['/sync/vc'] = JSON.stringify(vc);
+            }
+        },
 
-/* Assoc Array of site id to clocks */
-var vc = {};
-var loadVC = function () {
-    if (!!localStorage['/sync/vc']) {
-        vc = JSON.parse(localStorage['/sync/vc']);
-    } else {
-        localStorage['/sync/vc'] = JSON.stringify(vc);
-    }
-};
+        /** TODO move to another module? */
+        loadSiteId: function () {
+            if ('localStorage' in window && window['localStorage'] != null) {
+                if(!!localStorage['/sync/site-id']) {
+                    this.siteId = localStorage['site-id'];
+                } else {
+                    localStorage['/sync/site-id'] = this.siteId = uuid4(8);
+                }
+            } else {
+                throw Exception("Uhm no localStorage, this ain't gonna work");
+            }
+        },
 
-/**
- * Allows this site to submit a new operation.
- *
- * Eventually sends op to other sites.
- */
-var submitOperation = function (op) {
-    if (!! vc[siteId]) {
-        vc[siteId] = parseInt(vc[siteId], 10) + 1;
-    } else {
-        vc[siteId] = 0;
-    }
-    op.issuer = siteId;
-    op.vc = vc;
-    propagate(op);
-}
-/**
- * Process an operation from a remote site
- */
-var receiveUpdate = function (op) {
-    // ops come in FIFO from Unhosted queue
-    // within a site, ops are ordered FIFO
-    // between sites, no order is gaurenteed
-    vc[op.issuer] = op.vc[issuer];
-    apply(op);
-}
+        /**
+         * Process operations from a remote site
+         */
+        receiveUpdates: function (ops) {
+            for (var i = 0; i < ops.length; i++) {
+                this.receiveUpdate(ops[i]);
+            }
+        },
 
-/**
- * eventually sends op to other sites
- */
-var propagate = function (op) {
-    // ...
-}
+        /**
+         * Process an operation from a remote site
+         */
+        receiveUpdate: function (op) {
+            // ops come in FIFO from Unhosted queue
+            // within a site, ops are ordered FIFO
+            // between sites, no order is gaurenteed
+            this.vc[op.issuer] = op.vc[this.siteId];
+            this.apply(op);
+        },
 
-var apply = function (op) {
+        send: function (opCode, objectStore, keyPath, value) {
+            var op = newOperation(this.siteId, opCode, objectStore, keyPath, value);
+            this.submitOperation(op);
+            this.operationLog.push(op);
+        },
 
-};
+        /**
+         * Allows this site to submit a new operation.
+         *
+         * Eventually sends op to other sites.
+         */
+        submitOperation: function (op) {
+            if (!! this.vc[this.siteId]) {
+                this.vc[this.siteId] = parseInt(this.vc[siteId], 10) + 1;
+            } else {
+                this.vc[this.siteId] = 0;
+            }
+            op.issuer = this.siteId;
+            op.vc = this.vc;
+            this.propagate(op);
+        },
 
-// Scheduling:
-    // semantic scheduling - commutativity instead or with happensbefore
-    // op on different IndexedDb objectstore/keyPath values commute and
-    // can be executed in any order
+        /**
+         * Transfer an operation to all sites
+         * Asynchronous... eventual consistency
+         *
+         * Override me to testing
+         */
+        propagate: function (op) {
+            // TODO queue then post ...
+            // This will be provided via Unhosted
+        },
 
-    // Conflicts:
-    // happendsBefore (or other) to detect conflicts
+        /**
+         *
+         */
+        poll: function () {
+            // TODO Check Sync server for updates
+        },
 
-    // preconditions - put, delete - object must exist
-    // preconditions - add - object must not exist
-var schedule = function () {
-    if (precondition(op)) {
-        if (happendsbefore(lastOp, op)) {
-    
-        } else {
-            resolve(op);
-            // ouch
-        }
-    } else {
-        // ouch
-        resolve(op);
-    }
-};
+        poller: function () {
+            /* TODO
+               poll();
+               setTimeout(poll, 1000 * 30);
+            */
+        },
+        operationLog: [],
+        noSuchOp: null, // TODO make noop
+        lastOp: function () { 
+            var ops = this.operationLog;
+            return ops.length > 0 ? ops[ops.length -1] : this.noSuchOp; 
+        },
+        apply: function (op) {
+            // Scheduling:
+            // semantic scheduling - commutativity instead or with happensbefore
+            // op on different IndexedDb objectstore/keyPath values commute and
+            // can be executed in any order
 
-    var resolve = function (op, futureOps) {
-        //Thomas' write rule - FIFO - lost update 
+            // Conflicts:
+            // happendsBefore (or other) to detect conflicts
+
+            // preconditions - put, delete - object must exist
+            // preconditions - add - object must not exist
+            //var schedule = function () {
+            if (this.app.precondition(op)) {
+                if (this.happensBefore(this.lastOp(), op)) {
+                    this.app.commit(op);                
+                } else {
+                    /*
+                      var resolve = function (op, futureOps) {
+                      //Thomas' write rule - FIFO - lost update 
+                      };
+                    */
+                    this.app.resolve(op);
+                    // ouch
+                }
+            } else {
+                // ouch
+                this.app.resolve(op);
+            }
+        },
+
     };
+    o.vc[o.siteid] = o.vectorClock;
+    //o.__proto__ = Sync;
+    o.app = application;
+    // Start your engines...
+    o.poller();
+    return o;
+}; // newSync
 
     // Option attach vector clocks to each object, instead of at the site level...
 
-var ADD = 0;
-var PUT = 1;
-var DEL = 2;
 
 // Propagation
 var newOperation = function (siteId, opCode, objectStore, keyPath, value) {
@@ -207,5 +294,5 @@ var newOperation = function (siteId, opCode, objectStore, keyPath, value) {
     return op;
 };
 
-var log = []; // List of operation
+
 
