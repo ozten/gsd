@@ -1,0 +1,49 @@
+<html>
+<head><title>Vector Clock Unit Tests</title></head>
+<link rel="stylesheet" href="/js/test/qunit.css" type="text/css" media="screen" />
+<body>
+<h1 id="qunit-header">Vector Clock</h1>
+<h2 id="qunit-banner"></h2>
+<div id="qunit-testrunner-toolbar"></div>
+<h2 id="qunit-userAgent"></h2>
+<ol id="qunit-tests"></ol>
+<div id="qunit-fixture">test markup, will be hidden</div>
+
+<script type="text/javascript" src="/js/libs/jquery-1.5.min.js"></script>
+<script type="text/javascript" src="/js/gsd/sync/vector_clock.js"></script>
+<script type="text/javascript" src="/js/test/qunit.js"></script>
+<script type="text/javascript">
+
+test("Basic vector clocks", function () {
+    //expect(25);
+    var vc1 = {A:1, B:2, C:4, D:5},
+        vc2 = {A:0, B:2, C:2, D:3};
+    ok(dominates(vc1, vc2));
+    ok( ! dominates(vc2, vc1));
+    ok( ! conflicts(vc2, vc1));
+
+    var vc3 = {A:0, B:2, C:4, D:5};
+    ok(dominates(vc3, vc2));
+    ok(dominates(vc1, vc3));
+
+    var vc4 = {A:1, B:2, C:4, D:3},
+        vc5 = {A:1, B:2, C:3,D:4};
+    ok( conflicts(vc4, vc5), 'vc4 and vc5 have divergent histories');
+    ok( conflicts(vc5, vc4));
+    ok( ! dominates(vc4, vc5));
+
+    var vc6 = {A:1, B:2, C:4, D:3}, 
+        vc7 = {A:1, B:2, C:3, D:4},
+        vc8 = {A:1, B:2, C:4, D:4};
+    ok( dominates(vc8, vc6));
+    ok( dominates(vc8, vc7));
+    ok(! conflicts(vc8, vc6));
+    ok(! conflicts(vc8, vc7));
+
+    ok(conflicts(vc6, vc7), "vc6 and vc7 could be paths which don't overlap in reality, but which would conflict if they did.");
+
+});// test("Basic sync and local simulation")
+
+</script>
+</body>
+</html>
