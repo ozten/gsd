@@ -10,17 +10,10 @@
 <div id="qunit-fixture">test markup, will be hidden</div>
 
 <script type="text/javascript" src="/js/libs/jquery-1.5.min.js"></script>
+<script type="text/javascript" src="/js/gsd/sync/vector_clock.js"></script>
 <script type="text/javascript" src="/js/gsd/sync.js"></script>
 <script type="text/javascript" src="/js/test/qunit.js"></script>
 <script type="text/javascript">
-var arrayKeyLengthEqual = function (a, len, msg) {
-    var i = 0, k;
-    for (k in a) {
-        i++;
-    }
-    equal(i, len, msg);
-};
-test("Basic sync", function () {
     /* Simulate our Unhosted server */
     var log = []; // List of operation
 
@@ -28,8 +21,8 @@ test("Basic sync", function () {
     var site = {
         // Sync Public
         precondition: function (operation) { return true; },
-        resolveConflict: function (op, key, value) {
-            console.info("CONFLICT ", op, key, value);
+        resolveConflict: function (operation) {
+            console.info("CONFLICT ", operation);
         },
         // DB Public (get ride of commit??
         commit: function (op) {
@@ -59,7 +52,8 @@ test("Basic sync", function () {
         },
         localDelete: function (os, key) {
             delete this.indexedDb[os][key];
-        }
+        },
+        getLog: function () { return log; }
     };
     var newSite = function (siteId) {
         var a = {
@@ -94,11 +88,29 @@ test("Basic sync", function () {
 
     a.indexedDb[os] = {};
     b.indexedDb[os] = {};
+
+var resetSimulation = function () {
+    log = [];
+    a.indexedDb[os] = {};
+    b.indexedDb[os] = {};
+};
+var arrayKeyLengthEqual = function (a, len, msg) {
+    var i = 0, k;
+    for (k in a) {
+        i++;
+    }
+    equal(i, len, msg);
+};
+
+test("Basic sync", function () {
+    expect(25);
+    resetSimulation();
      
     // A context object to be stored in contexts
     // item0 here would normally be a uuid
     var content0 = {key: 'item0', name: 'Test 0'};
 
+    // ADD
     a.localAdd(os, content0.key, content0);
     ok(a.indexedDb[os][content0.key], "Testing the unit test, our simulated indexedDb works");
     equal(a.indexedDb[os][content0.key].name, content0.name);
@@ -107,13 +119,13 @@ test("Basic sync", function () {
 
     a.sync.send(Sync.ADD, os, content0.key, content0);
 
-    equal(log[0].opCode, Sync.Add, "Testing the Unit Test send is hooked up");
+    equal(log[0].cmd, Sync.ADD, "Testing the Unit Test send is hooked up");
     equal(log[0].os, os);
     equal(log[0].key, content0.key);
     equal(log[0].value.key, content0.key);
     equal(log[0].value.name, content0.name);
 
-
+    // PUT
     content0.name = 'Test 0 changed';
     notEqual(content0.name, a.indexedDb[os][content0.key].name, "Copy by value, need local or remote commit");
     a.localPut(os, content0.key, content0);
@@ -121,7 +133,7 @@ test("Basic sync", function () {
     equal(content0.name, (a.indexedDb[os][content0.key]).name, "Testing test simulation of local put");
     a.sync.send(Sync.PUT, os, content0.key, content0);    
 
-    equal(log[1].opCode, Sync.Add, "Testing the Unit Test send adds to log");
+    equal(log[1].cmd, Sync.PUT, "Testing the Unit Test send adds to log");
     equal(log[1].os, os);
     equal(log[1].key, content0.key);
     equal(log[1].value.key, content0.key);
@@ -130,8 +142,51 @@ test("Basic sync", function () {
     arrayKeyLengthEqual(b.indexedDb[os], 0, "Clean db");
     b.sync.receiveUpdates(log);
     arrayKeyLengthEqual(b.indexedDb[os], 1, "We have one item in the db now");
+    equal(a.indexedDb[os][content0.key].name, 
+          b.indexedDb[os][content0.key].name, "A and B are in sync");
 
-});// test("Basic sync")
+    a.localDelete(os, content0.key);
+    ok(! a.indexedDb[os][content0.key], "Testing test localDelete works");
+    a.sync.send(Sync.DEL, os, content0.key);
+console.info(log[2]);
+    equal(log[2].cmd, Sync.DEL, "Testing the Unit Test del");
+    b.sync.receiveUpdates(log);
+    arrayKeyLengthEqual(b.indexedDb[os], 0, "Item was deleted");
+
+});// test("Basic sync and local simulation")
+
+test("Typical sync use case 1", function () {
+    //expect(x);
+    resetSimulation();
+    a.sync.receiveUpdates(log);
+    b.sync.receiveUpdates(log);
+    a.sync.receiveUpdates(log);
+    b.sync.receiveUpdates(log);
+
+    arrayKeyLengthEqual(a.indexedDb[os], 0, "We can do many syncs when empty");
+    arrayKeyLengthEqual(b.indexedDb[os], 0, "We can do many syncs when empty");
+
+    var acontent0 = {key: 'item0', name: 'Test 0'};
+    a.localAdd(os, acontent0.key, acontent0);
+    a.sync.send(Sync.ADD, os, acontent0.key, acontent0);
+    equal(a.sync.vc.siteA, 1, "We should increment siteA's clock");
+
+    b.sync.receiveUpdates(log);
+    equal(a.indexedDb[os][acontent0.key].name, 
+          b.indexedDb[os][acontent0.key].name, "A and B are in sync");
+
+    equal(b.sync.vc.siteA, 1, "We should record siteA's clock");
+    equal(b.sync.vc.siteB, 0, "As well as our own");
+
+    var bcontent0 = {key: 'item0', name: 'Test 0'}; // same as A
+    bcontent0.name = 'Changed by B';
+    b.localPut(os, bcontent0.key, bcontent0);
+    b.sync.send(Sync.PUT, os, bcontent0.key, bcontent0);
+    a.sync.receiveUpdates(log);
+    equal(a.indexedDb[os][acontent0.key].name, 
+          b.indexedDb[os][acontent0.key].name, "A and B are still in sync");
+});
+
 </script>
 </body>
 </html>

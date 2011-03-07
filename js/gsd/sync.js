@@ -77,11 +77,6 @@ window.Sync = {
 var newSync = function (siteId, application/*precondition, commit, resolveConflict*/) {
     var o = {
         siteId: siteId,
-        vectorClock: {
-            site: siteId,
-            clock: 0,
-        },
-
         /* Assoc Array of site id to clocks */
         vc: {},
         app: {},
@@ -93,13 +88,40 @@ var newSync = function (siteId, application/*precondition, commit, resolveConfli
                 // Same node, queue gaurentees FIFO
                 return true;
             } else if (opA.issuer !== opB.issuer &&
-                       after(opB.clock, opA.executed)) {                
+                       this.vcAfter(opB.vc, opA.vc)) {
                 return true;
-            } else if (findOperation(opA, opB)) {
+            } else if (this.findOperation(opA, opB) !== this.noSuchOp) {
                 return true;
             }
         },
-
+        opAfter: function (opA, opB) {
+            console.info("OP AFTER???? \n", opA.issuer, this.printVC(opA.vc), 
+                         'with\n', opB.issuer, this.printVC(opB.vc), opA.vc);
+            if (this.opEqual(opA, opB)) {
+                return false;
+            }
+            return this.vcAfter(opA.vc, opB.vc);
+        },
+        vcAfter: function (vcA, vcB) {
+            console.info("VC AFTER???? \n", vcA.issuer, this.printVC(vcA), 
+                         'with\n', this.printVC(vcB), vcA);
+            // Are any of vcB's sites newer than ours?
+            return dominates(vcA, vcB);
+        },
+        opEqual: function (opA, opB) {
+            // we don't check key or value... we could
+            return opA.issuer == opB.issuer &&
+                   opA.cmd == opB.cmd &&
+            this.vcEqual(opA.vc, opB.vc);
+        },
+        
+        printVC: function (vc) {
+            var s = "";
+            for (k in vc) {
+                s += k + "=" + vc[k] + ', ';
+            }
+            return s;
+        },
         /**
          * Finds an operation opY where opA.clock is before opY.clock and
          * y.clock is before opB.clock
@@ -110,6 +132,21 @@ var newSync = function (siteId, application/*precondition, commit, resolveConfli
             // Go backwards through log looking for an operation that
             // satisfies this contraint. Give up if opY.clock is before opA
             // + operation padding, or if opY.clock is before opB (??)
+            var opLog =  this.app.getLog();
+            // TODO: does sync need to keep a copy of this log or
+            // is that an app thing?
+            for (var i = opLog.length - 1; i >= 0; i--) {
+                var opY = opLog[i];
+                if (this.opEqual(opY, opA) || this.opEqual(opY, opB)) {
+                    continue;
+                }
+                if (this.opAfter(opY, opA) &&
+                    this.opAfter(opB, opY)) {
+                    // opY proves opA came before opB
+                    return opY;
+                }
+            }
+            return this.noSuchOp;
         },
 
         CHARS: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split(''),
@@ -181,8 +218,11 @@ var newSync = function (siteId, application/*precondition, commit, resolveConfli
             // ops come in FIFO from Unhosted queue
             // within a site, ops are ordered FIFO
             // between sites, no order is gaurenteed
-            this.vc[op.issuer] = op.vc[this.siteId];
-            this.apply(op);
+            console.info("receivingg updates... updating clocks", this.siteId);
+            if (op.issuer !== this.siteId) {
+                this.vc[op.issuer] = op.vc[op.issuer];
+                this.apply(op);
+            }
         },
 
         send: function (opCode, objectStore, keyPath, value) {
@@ -197,12 +237,11 @@ var newSync = function (siteId, application/*precondition, commit, resolveConfli
          * Eventually sends op to other sites.
          */
         submitOperation: function (op) {
-            if (!! this.vc[this.siteId]) {
-                this.vc[this.siteId] = parseInt(this.vc[siteId], 10) + 1;
-            } else {
-                this.vc[this.siteId] = 0;
-            }
+            console.info("SubmitOperation ", this.vc);
+            this.vc[this.siteId] = this.vc[siteId] + 1;
+
             op.issuer = this.siteId;
+            console.info("VC should have both clocks", this.siteId, this.vc);
             op.vc = this.vc;
             this.propagate(op);
         },
@@ -251,14 +290,14 @@ var newSync = function (siteId, application/*precondition, commit, resolveConfli
             //var schedule = function () {
             if (this.app.precondition(op)) {
                 if (this.happensBefore(this.lastOp(), op)) {
-                    this.app.commit(op);                
+                    this.app.commit(op);
                 } else {
                     /*
                       var resolve = function (op, futureOps) {
                       //Thomas' write rule - FIFO - lost update 
                       };
                     */
-                    this.app.resolve(op);
+                    this.app.resolveConflict(op);
                     // ouch
                 }
             } else {
@@ -268,7 +307,7 @@ var newSync = function (siteId, application/*precondition, commit, resolveConfli
         },
 
     };
-    o.vc[o.siteid] = o.vectorClock;
+    o.vc[o.siteId] = 0;
     //o.__proto__ = Sync;
     o.app = application;
     // Start your engines...
