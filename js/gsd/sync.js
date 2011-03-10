@@ -67,7 +67,7 @@ window.Sync = {
     ADD: 0,
     PUT: 1,
     DEL: 2,
-
+    noSuchOp: 3, // TODO make noop
 }; // Sync
 
 /**
@@ -81,7 +81,7 @@ var newSync = function (siteId, application/*precondition, commit, resolveConfli
         vc: {},
         app: {},
         happensBefore: function (opA, opB) {
-            if (opA === this.noSuchOp) {
+            if (opA === Sync.noSuchOp) {
                 // First op ever
                 return true;
             } else if (opA.issuer === opB.issuer) {
@@ -90,7 +90,7 @@ var newSync = function (siteId, application/*precondition, commit, resolveConfli
             } else if (opA.issuer !== opB.issuer &&
                        this.vcAfter(opB.vc, opA.vc)) {
                 return true;
-            } else if (this.findOperation(opA, opB) !== this.noSuchOp) {
+            } else if (this.findOperation(opA, opB) !== Sync.noSuchOp) {
                 return true;
             }
         },
@@ -112,7 +112,7 @@ var newSync = function (siteId, application/*precondition, commit, resolveConfli
             // we don't check key or value... we could
             return opA.issuer == opB.issuer &&
                    opA.cmd == opB.cmd &&
-            this.vcEqual(opA.vc, opB.vc);
+            vcEqual(opA.vc, opB.vc);
         },
         
         printVC: function (vc) {
@@ -146,7 +146,7 @@ var newSync = function (siteId, application/*precondition, commit, resolveConfli
                     return opY;
                 }
             }
-            return this.noSuchOp;
+            return Sync.noSuchOp;
         },
 
         CHARS: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split(''),
@@ -204,9 +204,12 @@ var newSync = function (siteId, application/*precondition, commit, resolveConfli
 
         /**
          * Process operations from a remote site
+         * TODO: This belongs somewhere else that tracks
+         * previously seen operations
          */
         receiveUpdates: function (ops) {
             for (var i = 0; i < ops.length; i++) {
+                console.info("Calling receive", ops[i].issuer, ops[i].cmd);
                 this.receiveUpdate(ops[i]);
             }
         },
@@ -219,16 +222,19 @@ var newSync = function (siteId, application/*precondition, commit, resolveConfli
             // within a site, ops are ordered FIFO
             // between sites, no order is gaurenteed
             console.info("receivingg updates... updating clocks", this.siteId);
-            if (op.issuer !== this.siteId) {
+            // Couldn't this wipe out our clock?
+            // maybe try to apply before updating this.vc...
+            if (op.issuer !== this.siteId &&
+                this.apply(op)) {
                 this.vc[op.issuer] = op.vc[op.issuer];
-                this.apply(op);
             }
         },
 
         send: function (opCode, objectStore, keyPath, value) {
             var op = newOperation(this.siteId, opCode, objectStore, keyPath, value);
             this.submitOperation(op);
-            this.operationLog.push(op);
+            // Simulates global op log
+            this.globalOperationLog.push(op);
         },
 
         /**
@@ -270,12 +276,8 @@ var newSync = function (siteId, application/*precondition, commit, resolveConfli
                setTimeout(poll, 1000 * 30);
             */
         },
-        operationLog: [],
-        noSuchOp: null, // TODO make noop
-        lastOp: function () { 
-            var ops = this.operationLog;
-            return ops.length > 0 ? ops[ops.length -1] : this.noSuchOp; 
-        },
+        globalOperationLog: [],
+        
         apply: function (op) {
             // Scheduling:
             // semantic scheduling - commutativity instead or with happensbefore
@@ -289,21 +291,27 @@ var newSync = function (siteId, application/*precondition, commit, resolveConfli
             // preconditions - add - object must not exist
             //var schedule = function () {
             if (this.app.precondition(op)) {
-                if (this.happensBefore(this.lastOp(), op)) {
+                printOp('precond lastop=', this.app.lastOp()); 
+                printOp('precond this op=', op);
+                if (this.happensBefore(this.app.lastOp(), op)) {
                     this.app.commit(op);
+                    return true;
                 } else {
                     /*
                       var resolve = function (op, futureOps) {
                       //Thomas' write rule - FIFO - lost update 
                       };
                     */
+                    console.info("Calling resolveConflict");
                     this.app.resolveConflict(op);
                     // ouch
                 }
             } else {
                 // ouch
-                this.app.resolve(op);
+                console.info("Precondition failed");
+                this.app.resolveConflict(op);
             }
+            return false;
         },
 
     };
