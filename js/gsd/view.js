@@ -86,6 +86,7 @@ gsd.view.ensureContextListItem = function (db_id, cli_id, name) {
     
     c = $('#ct--1-li').clone();
     cpage_id = gsd.view.context_dom_page_id(db_id);
+    c.attr('data-content-id', db_id);
     $('a', c).text("@" + name);
     if (gsd.rspd.isNotSmallLayout()) {
         $('a', c).attr("href", "#");
@@ -181,6 +182,8 @@ gsd.view.ensureNextAction = function (contextDbId, id, nextAction) {
 gsd.view.updateContextNACount = function () {
     $('#contexts-list li.ui-btn').each(function (i, el) {
             var ctx_id = parseInt($(el).find('a').attr('data-role-id'), 10);
+            $('.ui-li-count', el).text('' +
+                $('#ct-' + ctx_id + '-page li.next-action').size());
         });
 };
 
