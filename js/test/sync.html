@@ -1,0 +1,282 @@
+<html>
+<head><title>sync Unit Tests</title></head>
+<link rel="stylesheet" href="/js/test/qunit.css" type="text/css" media="screen" />
+<body>
+<h1 id="qunit-header">QUnit example</h1>
+<h2 id="qunit-banner"></h2>
+<div id="qunit-testrunner-toolbar"></div>
+<h2 id="qunit-userAgent"></h2>
+<ol id="qunit-tests"></ol>
+<div id="qunit-fixture">test markup, will be hidden</div>
+
+<script type="text/javascript" src="/js/libs/jquery-1.5.min.js"></script>
+<script type="text/javascript" src="/js/gsd/sync/vector_clock.js"></script>
+<script type="text/javascript" src="/js/gsd/sync.js"></script>
+<script type="text/javascript" src="/js/test/qunit.js"></script>
+<script type="text/javascript">
+    var printOp = function (msg, l) {
+       if (! l) return;
+       if (l.cmd === Sync.ADD) {
+           console.info(msg, l.issuer, ' ADD ', l.key, '=', l.value.name);
+       } else if (l.cmd === Sync.PUT) {
+           console.info(msg, l.issuer, ' PUT ', l.key, '=', l.value.name);
+       } else if (l.cmd === Sync.DEL) {
+           console.info(msg, l.issuer, ' DEL ', l.key);
+       }
+    };
+    /* Simulate our Unhosted server */
+    var log = []; // List of operation
+
+    /* Simulate a local computer aka site */
+    var site = {
+        // Sync Public
+        precondition: function (op) {
+            switch (op.cmd) {
+                case Sync.ADD:
+                    return ! this.indexedDb[op.os][op.key];
+                case Sync.PUT:
+                    return !! this.indexedDb[op.os][op.key];
+                case Sync.DEL:
+                    return !! this.indexedDb[op.os][op.key];
+                default:
+                    throw Exception("Unknown opcode");
+            }
+        },
+        // Successfully applied operations log
+        operationLog: [],
+        lastOp: function () { 
+            var ops = this.operationLog;
+            return ops.length > 0 ? ops[ops.length -1] : Sync.noSuchOp; 
+        },
+        resolveConflict: function (operation) {
+            printOp('CONFLICT', operation);
+            this.conflicts.push(operation);
+        },
+        // DB Public (get ride of commit??
+        commit: function (op) {
+            // Not the global log, just our local view into consistency
+            this.operationLog.push(op);
+            switch (op.cmd) {
+                case Sync.ADD:
+                    this.localAdd(op.os, op.key, op.value);
+                    break;
+                case Sync.PUT:
+                    this.localPut(op.os, op.key, op.value);
+                    break;
+                case Sync.DEL:
+                    this.localDelete(op.os, op.key);
+                    break;
+                default:
+                    throw Exception("Unknown opcode");
+            }
+        },
+        localAdd: function (os, key, value) {
+            ok(!this.indexedDb[os][key], os + ':' + key + " should not exist yet");
+            var o = $.extend(true, {}, value);
+            this.indexedDb[os][key] = o;
+        },
+        localPut: function (os, key, value) {
+            ok(!!this.indexedDb[os][key], os + ':' + key + " should exist");
+            var o = $.extend(true, {}, value);
+            this.indexedDb[os][key] = o;
+        },
+        localDelete: function (os, key) {
+            ok(!!this.indexedDb[os][key], os + ':' + key + " should exist");
+            delete this.indexedDb[os][key];
+        },
+        logCount: 0,
+        /* Simulate update log */
+        pollForUpdates: function () {
+            for (; this.logCount < log.length; this.logCount++) {
+                this.sync.receiveUpdate(log[this.logCount]);
+            }
+        },
+        getLog: function () { return log; }
+    };
+    var newSite = function (siteId) {
+        var a = {
+            siteId: siteId,
+            // Simulate the IndexedDb
+            indexedDb: {},
+            sync: null,
+            // Simulate application
+            conflicts: [],
+        };
+        a.__proto__ = site;
+        a.sync = newSync(siteId, a /*site.precondition, site.commit, site.resolveConflict*/);
+        a.sync.connected = true;
+        return a;
+    };
+
+    // Replicants
+    var a = newSite('siteA');
+    var b = newSite('siteB');
+
+    var propagate = function (op) {
+        log.push(op);
+    };
+    a.sync.propagate = propagate;
+    b.sync.propagate = propagate;
+
+    var poller = function () {}; // Disabled for tests
+
+    a.sync.poller = poller;
+    b.sync.poller = poller;
+
+    // IndexedDb Object Store
+    var os = 'contexts'; 
+
+    a.indexedDb[os] = {};
+    b.indexedDb[os] = {};
+
+var resetSimulation = function () {
+    log = [];
+    a.indexedDb[os] = {};
+    b.indexedDb[os] = {};
+};
+var arrayKeyLengthEqual = function (a, len, msg) {
+    var i = 0, k;
+    for (k in a) {
+        i++;
+    }
+    equal(i, len, msg);
+};
+
+test("Basic sync", function () {
+    expect(29);
+    resetSimulation();
+     
+    // A context object to be stored in contexts
+    // item0 here would normally be a uuid
+    var content0 = {key: 'item0', name: 'Test 0'};
+
+    // ADD
+    a.localAdd(os, content0.key, content0);
+    ok(a.indexedDb[os][content0.key], "Testing the unit test, our simulated indexedDb works");
+    equal(a.indexedDb[os][content0.key].name, content0.name);
+
+    equal(content0.name, a.indexedDb[os][content0.key].name, "Testing test simulation of local add");
+
+    a.sync.send(Sync.ADD, os, content0.key, content0);
+
+    equal(log[0].cmd, Sync.ADD, "Testing the Unit Test send is hooked up");
+    equal(log[0].os, os);
+    equal(log[0].key, content0.key);
+    equal(log[0].value.key, content0.key);
+    equal(log[0].value.name, content0.name);
+
+    // PUT
+    content0.name = 'Test 0 changed';
+    notEqual(content0.name, a.indexedDb[os][content0.key].name, "Copy by value, need local or remote commit");
+    a.localPut(os, content0.key, content0);
+    equal(a.indexedDb[os][content0.key].name, content0.name, '(Testing the test) Item in IndexedDb was udpated');
+    equal(content0.name, (a.indexedDb[os][content0.key]).name, "Testing test simulation of local put");
+    a.sync.send(Sync.PUT, os, content0.key, content0);
+
+    equal(log[1].cmd, Sync.PUT, "Testing the Unit Test send adds to log");
+    equal(log[1].os, os);
+    equal(log[1].key, content0.key);
+    equal(log[1].value.key, content0.key);
+    equal(log[1].value.name, content0.name);
+
+    arrayKeyLengthEqual(b.indexedDb[os], 0, "Clean db");
+    b.pollForUpdates();
+    equal(b.logCount, 2, "We've seen two operations");
+    arrayKeyLengthEqual(b.indexedDb[os], 1, "We have one item in the db now");
+    equal(a.indexedDb[os][content0.key].name, 
+          b.indexedDb[os][content0.key].name, "A and B are in sync");
+
+    a.localDelete(os, content0.key);
+    ok(! a.indexedDb[os][content0.key], "Testing test localDelete works");
+    a.sync.send(Sync.DEL, os, content0.key);
+    equal(log[2].cmd, Sync.DEL, "Testing the Unit Test del");
+    b.pollForUpdates();
+    arrayKeyLengthEqual(b.indexedDb[os], 0, "Item was deleted");
+
+});// test("Basic sync and local simulation")
+
+test("Typical sync use case 1", function () {
+    //expect(x);
+    resetSimulation();
+    a.pollForUpdates();
+    b.pollForUpdates();
+    a.pollForUpdates();
+    b.pollForUpdates();
+
+    arrayKeyLengthEqual(a.indexedDb[os], 0, "We can do many syncs when empty");
+    arrayKeyLengthEqual(b.indexedDb[os], 0, "We can do many syncs when empty");
+
+    var acontent0 = {key: 'item0', name: 'Test 0'};
+    a.localAdd(os, acontent0.key, acontent0);
+    a.sync.send(Sync.ADD, os, acontent0.key, acontent0);
+    equal(a.sync.vc.siteA, 1, "We should increment siteA's clock");
+
+    b.pollForUpdates();
+    equal(a.indexedDb[os][acontent0.key].name, 
+          b.indexedDb[os][acontent0.key].name, "A and B are in sync");
+
+    equal(b.sync.vc.siteA, 1, "We should record siteA's clock");
+    equal(b.sync.vc.siteB, 0, "As well as our own");
+
+    var bcontent0 = {key: 'item0', name: 'Test 0'}; // same as A
+    bcontent0.name = 'Changed by B';
+    b.localPut(os, bcontent0.key, bcontent0);
+    b.sync.send(Sync.PUT, os, bcontent0.key, bcontent0);
+    a.pollForUpdates();
+    equal(a.indexedDb[os][acontent0.key].name, 
+          b.indexedDb[os][acontent0.key].name, "A and B are still in sync");
+
+
+    var bcontent1 = {key: 'item1', name: 'Test 1'}; // New item originating in B
+    b.localAdd(os, bcontent1.key, bcontent1);
+    b.sync.send(Sync.ADD, os, bcontent1.key, bcontent1);
+    a.pollForUpdates();
+    equal(a.indexedDb[os][bcontent1.key].name, 
+          b.indexedDb[os][bcontent1.key].name, "A and B are still in sync 2");
+
+
+    // TODO Add simulation for send while offline, then a 'catchup' send
+    // which creates a conflict...
+    a.sync.connected = false;//TODO do we need this?
+    bcontent1.name = 'Totally Changed by B';
+    b.localPut(os, bcontent1.key, bcontent1);
+    b.sync.send(Sync.PUT, os, bcontent1.key, bcontent1);
+    // A is offline a.pollForUpdates(); 
+    ok( a.indexedDb[os][bcontent1.key].name !== b.indexedDb[os][bcontent1.key].name, "A is offline and hasn't gotten the update");
+    a.localDelete(os, bcontent1.key);
+    a.sync.send(Sync.DEL, os, bcontent1.key);
+
+    equal(a.conflicts.length, 0, "No conflicts yet");
+    //A regains network connectivity 
+
+console.info("=============================== Fresh ===================");
+    a.pollForUpdates();
+
+    equal(a.conflicts.length, 1, "Our vector clock is out of sync");
+    console.info("A saw this as a conflict");
+    printOp('A conflict', a.conflicts[0]);
+
+    equal(b.conflicts.length, 0, "The up to date server has no conflicts");
+    b.pollForUpdates();
+    equal(b.conflicts.length, 1, "The up to date server sees a conflicting operation too");
+    printOp('B conflict', b.conflicts[0]);
+
+    // Once back in Sync... A can be a productive member of society
+    var acontent2 = {key: 'item2', name: 'WINNING!'};
+    a.localAdd(os, acontent2.key, acontent2);
+    a.sync.send(Sync.ADD, os, acontent2.key, acontent2);
+    var aPrevConflict = a.conflicts.length;
+    var bPrevConflict = b.conflicts.length;
+    a.pollForUpdates();
+    b.pollForUpdates();
+    //equal(a.indexedDb[os][acontent2.key].name, 
+    //      b.indexedDb[os][acontent2.key].name, "A and B are in sync"); 
+    equal(a.conflicts.length, aPrevConflict, "No change for A");
+    equal(b.conflicts.length, bPrevConflict, "No change for B");
+
+
+
+});
+</script>
+</body>
+</html>
