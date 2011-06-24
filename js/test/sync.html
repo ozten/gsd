@@ -124,11 +124,10 @@ test("Typical sync use case 1", function () {
     equal(a.conflicts.length, 0, "No conflicts yet");
     //A regains network connectivity 
 
-console.info("=============================== Fresh ===================");
     a.pollForUpdates();
 
     equal(a.conflicts.length, 1, "Our vector clock is out of sync");
-    console.info("A saw this as a conflict");
+
     printOp('A conflict', a.conflicts[0]);
 
     equal(b.conflicts.length, 0, "The up to date server has no conflicts");

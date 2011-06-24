@@ -202,18 +202,6 @@ var newSync = function (siteId, application/*precondition, commit, resolveConfli
         },
 
         /**
-         * Process operations from a remote site
-         * TODO: This belongs somewhere else that tracks
-         * previously seen operations
-         */
-        receiveUpdates: function (ops) {
-            for (var i = 0; i < ops.length; i++) {
-                console.info("Calling receive", ops[i].issuer, ops[i].cmd);
-                this.receiveUpdate(ops[i]);
-            }
-        },
-
-        /**
          * Process an operation from a remote site
          */
         receiveUpdate: function (op) {

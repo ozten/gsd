@@ -73,18 +73,16 @@ var site = {
     },
     getLog: function () { return this.operationLog; },
 
-
-    /* Global stuff... move me? */
     logCount: 0,
-    /* Simulate update log */
+
+    /* Simulate the global update log */
     pollForUpdates: function () {
-        console.info('logCount ' + this.logCount + ' ' + log.length);
         for (; this.logCount < log.length; this.logCount++) {
             this.sync.receiveUpdate(log[this.logCount]);
         }
     }
-
 };
+
 var newSite = function (siteId) {
     var a = {
         siteId: siteId,
