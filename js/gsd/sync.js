@@ -113,8 +113,7 @@ var newSync = function (siteId, application/*precondition, commit, resolveConfli
             return opA.issuer == opB.issuer &&
                    opA.cmd == opB.cmd &&
             vcEqual(opA.vc, opB.vc);
-        },
-        
+        },        
         printVC: function (vc) {
             var s = "";
             for (k in vc) {
@@ -133,7 +132,7 @@ var newSync = function (siteId, application/*precondition, commit, resolveConfli
             // satisfies this contraint. Give up if opY.clock is before opA
             // + operation padding, or if opY.clock is before opB (??)
             var opLog =  this.app.getLog();
-            // TODO: does sync need to keep a copy of this log or
+            // TODO: API DESIGN: does sync need to keep a copy of this log or
             // is that an app thing?
             for (var i = opLog.length - 1; i >= 0; i--) {
                 var opY = opLog[i];
